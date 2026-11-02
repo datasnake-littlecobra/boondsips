@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Secrets and local env (never commit these; use Cloudflare env settings)
+.env
+.env.*
+.dev.vars
+*.pem
+*.key
+
+# Cloudflare / Wrangler local state
+.wrangler/
+node_modules/
