@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boond · salted sweet, by the drop</title>
+<meta name="description" content="Boond is a fruit-flavored drink stick with a pinch of sea salt and fiber. Hydration with fiber. Not for sale yet: join the waitlist for the first taste test.">
+<meta name="theme-color" content="#FFD23F">
+<meta property="og:title" content="Boond · salted sweet, by the drop">
+<meta property="og:description" content="Hydration with fiber. Six salted fruit flavors. Join the waitlist for the first taste test.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://boondsips.com/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 26'%3E%3Cpath d='M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z' fill='%2314B5B0' stroke='%233A2A16' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF2D6; --brown:#3A2A16; --orange:#FF8A1F; --teal:#14B5B0; --pink:#FF7DA0; --green:#3FBF7A;
+  --lemon:#FFD23F; --mango:#FF8A1F; --watermelon:#FF4F7E; --plum:#7A3FB8; --guava:#FF9DB0; --cucumber:#3FBF7A;
+  --cta:#FF4F7E; --blush:#FFD6E0;
+  --bg:var(--cream); --surface:#FFF8E8; --ink:var(--brown); --muted:#6B5640; --line:var(--brown);
+  --shadow:var(--brown); --eyebrow:#B4520A; --track:#EADBB8;
+  --header-h:72px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
+    --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
+  --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 8px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;font-size:18px;line-height:1.6;overflow-x:hidden}
+img,svg{display:block}
+a{color:inherit}
+h1,h2,h3,.fred{font-family:"Fredoka","Nunito",sans-serif;line-height:1.05;margin:0}
+p{margin:0 0 1em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+/* ---------- buttons ---------- */
+.btn{
+  font:700 1.05rem/1 "Nunito",sans-serif;color:var(--brown);background:var(--cta);
+  border:3px solid var(--brown);border-radius:999px;padding:18px 30px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--brown);transition:transform .12s,box-shadow .12s;text-decoration:none;display:inline-block;
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--brown)}
+.btn:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--brown)}
+.btn--ghost{background:#FFF8E8}
+.btn--sm{padding:12px 22px;font-size:1rem}
+
+/* ---------- header ---------- */
+.progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--cta);z-index:60}
+.site-header{
+  position:sticky;top:0;z-index:50;height:var(--header-h);background:var(--lemon);
+  border-bottom:3px solid var(--brown);
+}
+.site-header .wrap{height:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.burger{width:44px;height:44px;border:0;background:none;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.burger span{display:block;height:4px;border-radius:4px;background:var(--brown)}
+.wordmark{display:inline-flex;align-items:flex-end;gap:1px;text-decoration:none;font:700 2.1rem/1 "Fredoka",sans-serif;color:var(--cream);
+  -webkit-text-stroke:2px var(--brown);paint-order:stroke fill;text-shadow:2px 2px 0 var(--brown)}
+.wordmark svg{width:.52em;height:.62em;margin-bottom:.04em;filter:drop-shadow(2px 2px 0 var(--brown))}
+.site-header .btn{padding:11px 22px;font-size:1rem;box-shadow:4px 4px 0 var(--brown)}
+
+/* menu */
+.menu{position:fixed;inset:0;z-index:70;background:var(--lemon);color:var(--brown);display:flex;flex-direction:column;padding:20px;
+  transform:translateY(-100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+.menu.open{transform:none;visibility:visible}
+.menu-top{display:flex;justify-content:space-between;align-items:center;height:calc(var(--header-h) - 20px)}
+.menu-close{width:48px;height:48px;border:3px solid var(--brown);border-radius:50%;background:#FFF8E8;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--brown);box-shadow:3px 3px 0 var(--brown)}
+.menu nav{margin-top:32px;display:flex;flex-direction:column;gap:6px}
+.menu nav a{font:700 2.2rem/1.25 "Fredoka",sans-serif;text-decoration:none}
+.menu nav a:hover{color:#B4520A}
+.menu small{margin-top:auto;font-weight:700}
+
+/* ---------- shared ---------- */
+section{position:relative}
+.eyebrow{display:flex;align-items:center;gap:14px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.9rem;color:var(--muted);margin:0 0 22px}
+.eyebrow .dot{flex:none;width:22px;height:22px;border-radius:50%;border:3px solid var(--line);background:var(--dc,var(--lemon));transition:background .3s}
+.on-color .eyebrow{color:var(--brown)}
+.on-color .eyebrow .dot{border-color:var(--brown)}
+.h2{font-size:clamp(2.6rem,9vw,4.6rem);font-weight:700;letter-spacing:-.01em}
+.lede{font-size:1.15rem;color:var(--ink)}
+.fine{font-size:.95rem;color:var(--muted)}
+.on-color{color:var(--brown)}
+.on-color .fine{color:#5A4328}
+.chip{display:inline-block;padding:12px 22px;border:3px solid var(--brown);border-radius:999px;background:#FFF8E8;color:var(--brown);
+  font:800 1.05rem/1 "Nunito",sans-serif;box-shadow:5px 5px 0 var(--brown)}
+.chip--green{background:var(--green)}
+.stripe{display:grid;grid-template-columns:repeat(6,1fr);height:16px;border-top:3px solid var(--brown);border-bottom:3px solid var(--brown)}
+.stripe i:nth-child(1){background:var(--lemon)}.stripe i:nth-child(2){background:var(--mango)}.stripe i:nth-child(3){background:var(--watermelon)}
+.stripe i:nth-child(4){background:var(--plum)}.stripe i:nth-child(5){background:var(--guava)}.stripe i:nth-child(6){background:var(--cucumber)}
+
+/* forms */
+.field{width:100%;font:600 1.1rem/1.3 "Nunito",sans-serif;color:var(--brown);background:#FFF8E8;border:3px solid var(--brown);border-radius:22px;padding:20px 24px}
+.field::placeholder{color:#8A7356}
+textarea.field{min-height:150px;resize:vertical}
+.form-row{display:flex;flex-direction:column;gap:22px;align-items:flex-start}
+.form-row .field{max-width:640px}
+.consent{font-size:.95rem;color:var(--muted);max-width:640px;margin:0}
+.on-color .consent{color:#5A4328}
+.mock-note{display:inline-block;font-size:.85rem;font-weight:800;color:var(--brown);background:var(--lemon);border:2px dashed var(--brown);border-radius:10px;padding:6px 10px;margin:0}
+.form-msg{font-weight:800;min-height:1.4em;margin:0}
+.checks{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px}
+.checks legend{font-weight:800;margin-bottom:10px;padding:0}
+.checks label{position:relative;cursor:pointer}
+.checks input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.checks span{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:3px solid var(--brown);border-radius:999px;background:#FFF8E8;color:var(--brown);font-weight:800;font-size:.98rem}
+.checks span::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--brown);background:var(--c)}
+.checks input:checked + span{background:var(--c);box-shadow:3px 3px 0 var(--brown)}
+.checks input:focus-visible + span{outline:3px solid var(--teal);outline-offset:3px}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 64px;overflow:hidden}
+.hero::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:var(--green);opacity:.5;top:-300px;right:-200px}
+.hero .wrap{position:relative}
+.hero .eyebrow{color:var(--eyebrow);font-size:.95rem;letter-spacing:.15em;display:block;line-height:1.9}
+.hero h1{font-size:clamp(3.4rem,15vw,7rem);font-weight:700;line-height:.95;margin:6px 0 30px;
+  -webkit-text-stroke:3px var(--brown);paint-order:stroke fill;text-shadow:4px 4px 0 var(--brown)}
+.hero h1 .l1{color:var(--cream);display:block}
+.hero h1 .l2{color:var(--orange);display:block}
+.hero .lede{max-width:600px;color:var(--ink);opacity:.9}
+.chips{display:flex;flex-wrap:wrap;gap:16px 14px;margin:30px 0 10px}
+.targets{font-size:.9rem;color:var(--muted);margin:14px 0 34px}
+.hero .form-row{gap:24px}
+
+/* ---------- flavor carousel ---------- */
+.flavors{padding:24px 0 56px}
+.flavors-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+.flavors-head .eyebrow{margin:0;display:block;line-height:1.8}
+.flavors-head .eyebrow .dot{display:inline-block;vertical-align:-4px;margin-right:12px}
+.arrows{display:flex;gap:12px;flex:none}
+.arrow{width:60px;height:60px;border-radius:50%;border:3px solid var(--brown);background:#FFF8E8;color:var(--brown);font-size:1.5rem;cursor:pointer;box-shadow:4px 4px 0 var(--brown)}
+.arrow:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--brown)}
+.track{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 20px 18px;scrollbar-width:none;
+  scroll-padding-left:20px}
+.track::-webkit-scrollbar{display:none}
+@media (min-width:1160px){.track{padding-left:calc((100vw - 1120px)/2 + 20px);scroll-padding-left:calc((100vw - 1120px)/2 + 20px)}}
+.card{flex:none;width:min(82vw,360px);scroll-snap-align:start;border:3px solid var(--brown);border-radius:30px;background:#FFF8E8;color:var(--brown);
+  box-shadow:8px 8px 0 var(--brown);overflow:hidden;display:flex;flex-direction:column}
+.card-top{background:var(--c);color:var(--ci,var(--brown));padding:22px 22px 26px;border-bottom:3px solid var(--brown);min-height:180px}
+.card-top .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-top .num{font:700 1rem/1 "Fredoka";letter-spacing:.12em}
+.card-top .chip{padding:8px 14px;font-size:.95rem;box-shadow:3px 3px 0 var(--brown)}
+.card-top h3{font-size:2.3rem;font-weight:700}
+.card-body{padding:22px;display:flex;flex-direction:column;gap:16px;flex:1}
+.card-body p{margin:0;font-size:1.05rem}
+.meter{display:grid;grid-template-columns:80px 1fr;align-items:center;gap:8px 12px;font-size:.85rem;letter-spacing:.12em;margin:6px 0 8px}
+.bars{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.bars i{height:14px;border-radius:999px;background:#EADBB8}
+.bars i.on{background:var(--c);border:2px solid var(--brown)}
+.try{margin-top:auto;width:100%;background:#FFF8E8;color:var(--brown);border:3px solid var(--brown);border-radius:999px;padding:16px;font:800 1.1rem/1 "Nunito";cursor:pointer;box-shadow:4px 4px 0 var(--brown)}
+.try[aria-pressed="true"]{background:var(--c);color:var(--ci,var(--brown))}
+.flavors .fine{margin:20px 0 0}
+.scroll-cue{display:flex;align-items:flex-start;gap:16px;margin-top:8px;font-weight:800;letter-spacing:.18em;font-size:.9rem;color:var(--muted)}
+.scroll-cue::before{content:"";width:2px;height:54px;background:var(--ink);animation:cue 1.8s ease-in-out infinite;transform-origin:top}
+@keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- marquee ---------- */
+.marquee{background:var(--teal);border-bottom:3px solid var(--brown);overflow:hidden;padding:18px 0;color:var(--brown)}
+.marquee-inner{display:flex;width:max-content;animation:marq 26s linear infinite}
+.marquee span{font:700 2.4rem/1 "Fredoka";padding:0 34px;white-space:nowrap}
+.marquee span.sl{color:var(--cream);padding:0}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- who ---------- */
+.who{padding:96px 0 72px}
+.who .lede{max-width:640px;margin-top:28px}
+.who-cards{display:grid;gap:26px;margin-top:40px}
+@media (min-width:860px){.who-cards{grid-template-columns:repeat(3,1fr)}}
+.who-card{border:3px solid var(--brown);border-radius:30px;padding:28px 26px;background:var(--c);color:var(--brown);box-shadow:8px 8px 0 var(--brown)}
+.who-card .num{font:700 1.1rem/1 "Fredoka";margin-bottom:16px}
+.who-card h3{font-size:2rem;margin-bottom:12px}
+.who-card p{margin:0}
+
+/* ---------- showcase (sticky scroll) ---------- */
+.show{height:600vh;--fc:var(--lemon);--fi:var(--brown);border-top:3px solid var(--brown)}
+.show-sticky{position:sticky;top:var(--header-h);height:calc(100svh - var(--header-h));overflow:hidden;background:var(--fc);color:var(--fi);transition:background .5s,color .5s}
+.show-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.35),transparent 55%)}
+.show-words{position:absolute;top:50%;left:0;transform:translateY(-50%);white-space:nowrap;will-change:transform;
+  font:700 clamp(7rem,32vw,20rem)/1 "Fredoka";color:transparent;-webkit-text-stroke:3px var(--fi);opacity:.35}
+.show-words span{display:inline-block;padding:0 .2em}
+.show-grid{position:relative;height:100%;max-width:1120px;margin:0 auto;padding:24px 20px 28px;display:grid;
+  grid-template-columns:1fr auto;grid-template-rows:auto 1fr auto;gap:8px}
+.show-count{grid-column:1;grid-row:1}
+.show-count small{display:block;letter-spacing:.14em;font-size:1rem}
+.show-count b{display:block;font:700 4.6rem/1 "Fredoka"}
+.show-count span{letter-spacing:.14em}
+.show-ticks{grid-column:2;grid-row:1 / 4;align-self:center;display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.show-ticks i{display:block;width:22px;height:3px;background:currentColor;opacity:.55;transition:width .3s,opacity .3s}
+.show-ticks i.on{width:48px;opacity:1}
+.stick-wrap{grid-column:1 / 3;grid-row:2;display:flex;align-items:center;justify-content:center;min-height:0}
+.stick{height:min(48vh,420px);aspect-ratio:9/20;max-height:100%;background:var(--fc);color:var(--brown);border:2px solid var(--brown);border-radius:8px;
+  box-shadow:0 30px 60px rgba(58,42,22,.35);display:flex;flex-direction:column;align-items:center;text-align:center;padding:9% 8%;
+  transform:rotate(var(--rot,0deg)) translateY(var(--ty,0));transition:background .5s;position:relative}
+.stick::before,.stick::after{content:"";position:absolute;left:4%;right:4%;border-top:2px dashed rgba(58,42,22,.6)}
+.stick::before{top:5%}.stick::after{bottom:5%}
+.stick .logo{width:36%;margin-top:6%}
+.stick .brand{font:800 .62rem/1 "Nunito";letter-spacing:.3em;margin-top:6%}
+.stick .salted{margin-top:auto;font:700 .7rem/1 "Nunito";letter-spacing:.25em}
+.stick .fname{font:700 clamp(1.1rem,6vw,2rem)/1 "Fredoka";margin:8% 0;text-transform:uppercase;letter-spacing:-.01em}
+.stick hr{width:80%;border:0;border-top:2px solid var(--brown);margin:0 0 8%}
+.stick .desc{font:800 .55rem/1.4 "Nunito";letter-spacing:.15em}
+.stick .nums{margin-top:auto;margin-bottom:6%;font:600 .5rem/1.5 "Nunito";letter-spacing:.06em}
+.show-text{grid-column:1 / 3;grid-row:3;max-width:640px}
+.show-text h3{font-size:clamp(2.2rem,9vw,3.6rem)}
+.show-text p{margin:8px 0 10px;font-size:1.15rem}
+.show-text .insp{font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;margin:0}
+.show-text .insp a{text-underline-offset:3px}
+
+/* ---------- why ---------- */
+.why{background:var(--orange);color:var(--brown);padding:96px 0}
+.reveal{font:700 clamp(2rem,8.4vw,3.8rem)/1.18 "Fredoka";margin:0}
+.reveal .w{color:rgba(58,42,22,.25);transition:color .25s}
+.reveal .w.on{color:var(--brown)}
+.reveal .w.hi.on{color:var(--cream);-webkit-text-stroke:2px var(--brown);paint-order:stroke fill;text-shadow:2px 2px 0 var(--brown)}
+
+/* ---------- how ---------- */
+.how{padding:96px 0 72px}
+.how-bar{height:6px;background:var(--line);border-radius:6px;margin:56px 0 36px;position:relative;overflow:hidden}
+.how-bar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--cta);border-radius:6px}
+.steps{display:grid;gap:0}
+@media (min-width:860px){.steps{grid-template-columns:repeat(3,1fr);gap:40px}}
+.step{padding:22px 0 30px;border-bottom:1px solid color-mix(in srgb,var(--ink) 25%,transparent)}
+.step b{display:block;font:700 5rem/1 "Fredoka";color:var(--c);text-shadow:4px 4px 0 var(--shadow);margin-bottom:18px}
+.step h3{font-size:2.6rem;margin-bottom:10px}
+.step p{color:var(--muted);margin:0}
+
+/* ---------- when ---------- */
+.when{background:var(--lemon);color:var(--brown);padding:88px 0;border-top:3px solid var(--brown);border-bottom:3px solid var(--brown)}
+.when-list{margin-top:48px;border-top:3px solid var(--brown)}
+.when-item{display:grid;grid-template-columns:72px 1fr;gap:6px 18px;padding:30px 0;border-bottom:3px solid var(--brown)}
+.when-item small{font:800 1rem/2.6 "Nunito";letter-spacing:.12em;grid-row:1 / 3}
+.when-item h3{font-size:2.4rem}
+.when-item p{margin:10px 0 0}
+@media (min-width:860px){.when-item{grid-template-columns:120px 1fr 1.2fr}.when-item p{margin:0}}
+
+/* ---------- math ---------- */
+.math{background:var(--blush);padding:88px 0}
+.math .lede{max-width:640px;margin-top:40px}
+.math p{color:var(--ink)}
+.calc{margin-top:36px;max-width:720px;border:3px solid var(--brown);border-radius:30px;background:#FFF8E8;color:var(--brown);box-shadow:10px 10px 0 var(--brown);padding:26px}
+.calc-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding-bottom:22px;border-bottom:3px solid var(--brown)}
+.calc-top button{width:64px;height:64px;border-radius:50%;border:3px solid var(--brown);background:var(--orange);font-size:1.6rem;color:var(--brown);cursor:pointer;box-shadow:4px 4px 0 var(--brown)}
+.calc-top button:disabled{background:transparent;border-color:#BDB09A;color:#BDB09A;box-shadow:none;cursor:default}
+.calc-count{text-align:center}
+.calc-count b{display:block;font:700 5.4rem/1 "Fredoka"}
+.calc-count span{letter-spacing:.18em;font-size:.95rem}
+.calc-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name amt" "note pct" "note bar";gap:4px 16px;padding:22px 0;border-bottom:2px solid var(--brown)}
+.calc-row:last-of-type{border-bottom:0}
+.calc-row .name{grid-area:name;font:800 1.35rem/1.2 "Nunito"}
+.calc-row .note{grid-area:note;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:#6B5640}
+.calc-row .amt{grid-area:amt;font:700 2.2rem/1 "Fredoka";text-align:right}
+.calc-row .pct{grid-area:pct;text-align:right;font-size:1.05rem}
+.calc-row .bar{grid-area:bar;width:150px;height:16px;border:2px solid var(--brown);border-radius:999px;overflow:hidden;background:#FFF8E8;justify-self:end}
+.calc-row .bar i{display:block;height:100%;width:0;background:var(--orange);transition:width .3s}
+.calc-foot{font-size:.9rem;color:#6B5640;margin:14px 0 0}
+
+/* ---------- story / join ---------- */
+.story{padding:96px 0}
+.story .lede{max-width:640px;margin:26px 0 30px}
+.join{background:var(--teal);color:var(--brown);padding:96px 0;border-top:3px solid var(--brown)}
+.join .h2{color:var(--cream);-webkit-text-stroke:3px var(--brown);paint-order:stroke fill;text-shadow:4px 4px 0 var(--brown)}
+.join .lede{color:var(--brown);max-width:620px;margin:24px 0 30px}
+.join .checks span{background:#FFF8E8}
+
+/* ---------- footer ---------- */
+.foot{background:var(--brown);color:var(--cream);padding:56px 0 40px}
+.foot .wordmark{-webkit-text-stroke:2px #000;text-shadow:2px 2px 0 #000}
+.foot p{margin:16px 0 0;color:#E8D7B5}
+.foot a{color:var(--cream)}
+.foot-links{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:22px;font-weight:700}
+
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .marquee-inner,.scroll-cue::before{animation:none}
+  .stick{transform:none!important}
+}
+@media (min-width:860px){
+  .hero{padding:110px 0 90px}
+  .form-row.inline{flex-direction:row;align-items:center}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="wrap">
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+    <a class="wordmark" href="#top" aria-label="Boond, home">
+      <span aria-hidden="true">b</span>
+      <svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#FFF2D6" stroke="#3A2A16" stroke-width="2.4"/></svg>
+      <svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#14B5B0" stroke="#3A2A16" stroke-width="2.4"/></svg>
+      <span aria-hidden="true">nd</span>
+    </a>
+    <a class="btn" href="#join">Join</a>
+  </div>
+</header>
+
+<div class="menu" id="menu" aria-hidden="true">
+  <div class="menu-top">
+    <span class="fred" style="font-size:1.4rem;font-weight:700">Menu</span>
+    <button class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+  </div>
+  <nav aria-label="Site">
+    <a href="#flavors">Flavors</a>
+    <a href="#who">Who it's for</a>
+    <a href="#how">How it works</a>
+    <a href="#math">Do the math</a>
+    <a href="#story">Your story</a>
+    <a href="#join">Join the waitlist</a>
+  </nav>
+  <small>salted sweet, by the drop</small>
+</div>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Salted sweet, by the drop &nbsp;/&nbsp; Taste testers wanted</p>
+    <h1><span class="l1">Hydration</span><span class="l2">with fiber.</span></h1>
+    <p class="lede">A fruit-flavored drink stick with a pinch of sea salt and 4&nbsp;g of fiber. Tear, pour, stir. Made for travel days, big meals and busy mornings.</p>
+    <div class="chips">
+      <span class="chip chip--green">4 g fiber</span>
+      <span class="chip">4 g sugar</span>
+      <span class="chip">about 200 mg sodium</span>
+      <span class="chip">about 25 cal</span>
+    </div>
+    <p class="targets">Per stick. These numbers are targets, not final.</p>
+
+    <form class="form-row" id="heroForm" novalidate>
+      <label class="sr-only" for="heroEmail">Your email</label>
+      <input class="field" id="heroEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
+      <button class="btn" type="submit">Join waitlist</button>
+      <p class="consent">First taste test and launch news only. Unsubscribe anytime.</p>
+      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
+      <p class="form-msg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<!-- FLAVOR CAROUSEL -->
+<section class="flavors" id="flavors" aria-label="Six flavors">
+  <div class="wrap flavors-head">
+    <p class="eyebrow"><span class="dot" id="carDot"></span>Six flavors. Swipe or use the arrows.</p>
+    <div class="arrows">
+      <button class="arrow" id="prev" aria-label="Previous flavor">&larr;</button>
+      <button class="arrow" id="next" aria-label="Next flavor">&rarr;</button>
+    </div>
+  </div>
+  <div class="track" id="track" tabindex="0" aria-label="Flavor cards"></div>
+  <div class="wrap">
+    <p class="fine">Draft tasting direction from our own judgment, not lab data. Real taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
+    <div class="scroll-cue" aria-hidden="true">SCROLL</div>
+  </div>
+</section>
+
+<div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="marquee" aria-hidden="true"><div class="marquee-inner" id="marquee"></div></div>
+
+<!-- WHO -->
+<section class="who" id="who">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--orange)"></span>Who it's for</p>
+    <h2 class="h2">For people who grew up with salt on their fruit.</h2>
+    <p class="lede">If a squeeze of lime and a pinch of salt on mango, melon or cucumber was a normal afternoon at your house, this is for you. It is also for anyone who wants a drink that tastes like something, without the sugar bomb. Made for adults.</p>
+    <div class="who-cards">
+      <article class="who-card" style="--c:var(--lemon)">
+        <div class="num">01</div>
+        <h3>You grew up with it</h3>
+        <p>Nimbu pani, aam panna, chaas, salted plum, tajin on fruit. You know the taste, and you can't find it in a US store.</p>
+      </article>
+      <article class="who-card" style="--c:var(--orange)">
+        <div class="num">02</div>
+        <h3>You like less sweet</h3>
+        <p>Tired of drinks that are mostly sugar? Ours has 4&nbsp;g (a target, not final) and a little salt. You taste fruit, not syrup.</p>
+      </article>
+      <article class="who-card" style="--c:var(--green)">
+        <div class="num">03</div>
+        <h3>You're always out the door</h3>
+        <p>One stick and a bottle of water. It fits a pocket, a tote or a carry-on, so the flavor goes where you go.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SHOWCASE -->
+<section class="show" id="show" aria-label="Flavor by flavor">
+  <div class="show-sticky">
+    <div class="show-glow" aria-hidden="true"></div>
+    <div class="show-words" id="showWords" aria-hidden="true"></div>
+    <div class="show-grid">
+      <div class="show-count"><small>Flavor</small><b id="showNum">01</b><span>/ 06</span></div>
+      <div class="show-ticks" id="showTicks" aria-hidden="true"></div>
+      <div class="stick-wrap">
+        <div class="stick" id="stick" aria-hidden="true">
+          <svg class="logo" viewBox="0 0 64 40"><path d="M16 38h34a12 12 0 0 0 1-24 16 16 0 0 0-30-4A12 12 0 0 0 16 38Z" fill="#3A2A16"/><path d="M33 15s-6 8-6 12a6 6 0 0 0 12 0c0-4-6-12-6-12Z" fill="var(--fc)"/></svg>
+          <div class="brand">BOOND</div>
+          <div class="salted">SALTED</div>
+          <div class="fname" id="stickName">Lemon</div>
+          <hr>
+          <div class="desc">HYDRATION<br>WITH FIBER</div>
+          <div class="nums">TARGETS: 4 G FIBER / 200 MG SODIUM<br>1 STICK + 12 OZ WATER</div>
+        </div>
+      </div>
+      <div class="show-text" aria-live="polite">
+        <h3 id="showName">Salted Lemon</h3>
+        <p id="showLine">Sweet, sour, a pinch of salt.</p>
+        <p class="insp" id="showInsp">Inspired by / Nimbu pani, India's summer lemonade</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why on-color" id="why">
+  <div class="wrap">
+    <p class="eyebrow">Why salt and fruit</p>
+    <p class="reveal" id="reveal">*Salt on fruit is *not a trend. It is how mango, melon, *lemon, plum, guava and *cucumber are eaten at *kitchen tables and street *stalls from India to *Japan to Mexico, and *cucumber gets its salt *too. We made it a drink.</p>
+  </div>
+</section>
+<div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<!-- HOW -->
+<section class="how" id="how">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--lemon)"></span>How it works</p>
+    <h2 class="h2">Three moves.<br>No blender.</h2>
+    <div class="how-bar" aria-hidden="true"><i id="howBar"></i></div>
+    <div class="steps">
+      <div class="step" style="--c:var(--lemon)"><b>01</b><h3>Tear</h3><p>One stick fits a pocket, a carry-on or a glove box.</p></div>
+      <div class="step" style="--c:var(--orange)"><b>02</b><h3>Pour</h3><p>Into about 12 oz of water. Cold is best, room temperature works.</p></div>
+      <div class="step" style="--c:var(--pink)"><b>03</b><h3>Stir</h3><p>Ten seconds. Taste the fruit first, then the salt.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHEN -->
+<section class="when on-color" id="when">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--pink)"></span>When you reach for it</p>
+    <h2 class="h2">For the days that<br>run long.</h2>
+    <div class="when-list">
+      <div class="when-item"><small>01</small><h3>Travel day</h3><p>Dry cabin air, long lines, a hotel tap you do not trust. One stick in your bottle.</p></div>
+      <div class="when-item"><small>02</small><h3>Big dinner</h3><p>Festival night, wedding table, a second helping. Something salty-sweet and cold to sip between plates.</p></div>
+      <div class="when-item"><small>03</small><h3>Busy morning</h3><p>Keys, bag, bottle. Tear, pour, stir, and you are out the door with something that tastes like fruit.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MATH -->
+<section class="math" id="math">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--pink)"></span>Do the math</p>
+    <h2 class="h2">We did the<br>homework.</h2>
+    <p class="lede">Most people have to look up daily values and do the math themselves. Pick how many sticks you would have in a day and see what it adds up to.</p>
+    <p>These are the FDA's label reference numbers, the same ones on every package. They are not personal advice. If a doctor has given you your own limits for sodium, sugar or potassium, follow theirs.</p>
+    <div class="calc" id="calc">
+      <div class="calc-top">
+        <button type="button" id="minus" aria-label="One fewer stick">&minus;</button>
+        <div class="calc-count"><b id="sticks" aria-live="polite">1</b><span id="sticksLbl">STICK A DAY</span></div>
+        <button type="button" id="plus" aria-label="One more stick">+</button>
+      </div>
+      <div id="calcRows"></div>
+      <p class="calc-foot">Per-stick numbers are targets, not final. Daily values from the <a href="https://www.fda.gov/food/nutrition-facts-label/daily-value-nutrition-and-supplement-facts-labels" target="_blank" rel="noopener">FDA's Daily Value reference</a> (2,000-calorie diet). The sugar row counts all 4&nbsp;g as added sugar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="story" id="story">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--teal)"></span>Your story</p>
+    <h2 class="h2">What did you grow up sipping?</h2>
+    <p class="lede">Your grandmother's nimbu pani, a cart on the corner, a plum your aunt kept in a jar. Tell us. It helps us decide what to make first.</p>
+    <form class="form-row" id="storyForm" novalidate>
+      <label class="sr-only" for="storyText">Your story</label>
+      <textarea class="field" id="storyText" name="story" maxlength="1000" placeholder="The salty-sweet drink I remember is..." required></textarea>
+      <label class="sr-only" for="storyEmail">Your email (optional)</label>
+      <input class="field" id="storyEmail" name="email" type="email" autocomplete="email" placeholder="Your email (optional)">
+      <button class="btn btn--ghost" type="submit">Send my story</button>
+      <p class="consent">We only use your story to plan flavors. We will not publish it or your name without asking you first. Leave your email if you want waitlist news too, and you can unsubscribe anytime.</p>
+      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
+      <p class="form-msg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section class="join on-color" id="join">
+  <div class="wrap">
+    <h2 class="h2">Join the waitlist.</h2>
+    <p class="lede">Boond is not for sale yet. Be first in line for the taste test, and tell us which flavors you want to try.</p>
+    <form class="form-row" id="joinForm" novalidate>
+      <label class="sr-only" for="joinEmail">Your email</label>
+      <input class="field" id="joinEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
+      <fieldset class="checks" id="joinPicks">
+        <legend>Flavors I'd try (optional)</legend>
+      </fieldset>
+      <button class="btn" type="submit">Join the waitlist</button>
+      <p class="consent">By joining, you agree we can email you about the Boond taste test and launch. Nothing else, and we never sell or share your email. Every email has an unsubscribe link, or write to <a href="mailto:hello@boondsips.com">hello@boondsips.com</a> and we will remove you.</p>
+      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
+      <p class="form-msg" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="Boond, back to top">
+      <span aria-hidden="true">b</span>
+      <svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#FFF2D6" stroke="#000" stroke-width="2.4"/></svg>
+      <svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#14B5B0" stroke="#000" stroke-width="2.4"/></svg>
+      <span aria-hidden="true">nd</span>
+    </a>
+    <p>salted sweet, by the drop · hydration with fiber</p>
+    <p>Not for sale yet. Per-stick numbers are targets, not final.</p>
+    <div class="foot-links">
+      <a href="mailto:hello@boondsips.com">hello@boondsips.com</a>
+      <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">@boondsips</a>
+      <a href="#join">Join the waitlist</a>
+    </div>
+    <p>&copy; <span id="yr">2026</span> Boond</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var FLAVORS = [
+    {id:"lemon", name:"Salted Lemon", short:"Lemon", c:"#FFD23F", ink:"#3A2A16",
+     card:"The closest to a salted lemonade. The salt rounds off the sour.",
+     line:"Sweet, sour, a pinch of salt.", m:[2,4,5,4],
+     insp:"Nimbu pani, India's summer lemonade", href:"https://en.wikipedia.org/wiki/Shikanjvi"},
+    {id:"mango", name:"Salted Mango", short:"Mango", c:"#FF8A1F", ink:"#3A2A16",
+     card:"Sweet ripe mango up front, a salty, tangy finish in the background.",
+     line:"Ripe, round, a little tangy.", m:[4,3,2,3],
+     insp:"Aam panna, a green-mango summer cooler", href:"https://en.wikipedia.org/wiki/Aam_panna"},
+    {id:"watermelon", name:"Salted Watermelon", short:"Watermelon", c:"#FF4F7E", ink:"#3A2A16",
+     card:"Like a cold slice with a shake of salt. Light and juicy.",
+     line:"Juicy and light, with a shake of salt.", m:[3,3,1,5],
+     insp:"A cold slice with salt on a hot afternoon", href:""},
+    {id:"plum", name:"Salted Plum", short:"Plum", c:"#7A3FB8", ink:"#FFF2D6",
+     card:"Deep and tart. Closer to a salted dried plum than to candy.",
+     line:"Dark, tart, salty-sour.", m:[2,4,4,2],
+     insp:"Umeboshi, Japan's salted plum", href:"https://en.wikipedia.org/wiki/Umeboshi"},
+    {id:"guava", name:"Salted Guava", short:"Guava", c:"#FF9DB0", ink:"#3A2A16",
+     card:"Floral pink guava with a salty edge, like a wedge from a street cart.",
+     line:"Floral, pink, a salty edge.", m:[3,3,2,3],
+     insp:"Guava with salt and chili from a street cart", href:""},
+    {id:"cucumber", name:"Salted Cucumber Mint", short:"Cucumber Mint", c:"#3FBF7A", ink:"#3A2A16",
+     card:"Cool cucumber, a little mint, a pinch of salt. The least sweet of the six.",
+     line:"Cool, green, barely sweet.", m:[1,3,2,5],
+     insp:"Cucumber with salt and lime", href:""}
+  ];
+  var METER = ["Sweet","Salty","Tart","Fresh"];
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function $(id){return document.getElementById(id)}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+  /* ---- picks (per-viewer convenience only) ---- */
+  var picks = {};
+  try { picks = JSON.parse(localStorage.getItem("boondPicks") || "{}") || {}; } catch(e) { picks = {}; }
+  function savePicks(){ try { localStorage.setItem("boondPicks", JSON.stringify(picks)); } catch(e){} }
+
+  /* ---- carousel ---- */
+  var track = $("track");
+  track.innerHTML = FLAVORS.map(function(f,i){
+    var meter = METER.map(function(label,k){
+      var bars = ""; for (var b=0;b<5;b++) bars += '<i class="'+(b<f.m[k]?"on":"")+'"></i>';
+      return '<span>'+label.toUpperCase()+'</span><span class="bars" role="img" aria-label="'+label+' '+f.m[k]+' of 5">'+bars+'</span>';
+    }).join("");
+    return '<article class="card" style="--c:'+f.c+';--ci:'+f.ink+'">'+
+      '<div class="card-top"><div class="row"><span class="num">0'+(i+1)+'</span><span class="chip chip--green">4 g fiber</span></div><h3>'+esc(f.name).replace(" ","<br>")+'</h3></div>'+
+      '<div class="card-body"><p>'+esc(f.card)+'</p><div class="meter">'+meter+'</div>'+
+      '<button class="try" type="button" data-id="'+f.id+'" aria-pressed="false">I\'d try this</button></div></article>';
+  }).join("");
+  function cardStep(){ var c = track.querySelector(".card"); return c ? c.getBoundingClientRect().width + 22 : 300; }
+  $("prev").addEventListener("click", function(){ track.scrollBy({left:-cardStep(), behavior: reduce?"auto":"smooth"}); });
+  $("next").addEventListener("click", function(){ track.scrollBy({left:cardStep(), behavior: reduce?"auto":"smooth"}); });
+  track.addEventListener("scroll", function(){
+    var i = Math.max(0, Math.min(5, Math.round(track.scrollLeft / cardStep())));
+    $("carDot").style.background = FLAVORS[i].c;
+  }, {passive:true});
+  $("carDot").style.background = FLAVORS[0].c;
+
+  /* ---- join picks ---- */
+  $("joinPicks").insertAdjacentHTML("beforeend", FLAVORS.map(function(f){
+    return '<label style="--c:'+f.c+'"><input type="checkbox" name="flavors" value="'+f.id+'"><span>'+esc(f.short)+'</span></label>';
+  }).join(""));
+  function renderPicks(){
+    track.querySelectorAll(".try").forEach(function(b){
+      var on = !!picks[b.dataset.id];
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.textContent = on ? "On my list ✓" : "I'd try this";
+    });
+    document.querySelectorAll('#joinPicks input').forEach(function(cb){ cb.checked = !!picks[cb.value]; });
+  }
+  track.addEventListener("click", function(e){
+    var b = e.target.closest(".try"); if (!b) return;
+    picks[b.dataset.id] = !picks[b.dataset.id]; savePicks(); renderPicks();
+  });
+  $("joinPicks").addEventListener("change", function(e){
+    if (e.target.name === "flavors") { picks[e.target.value] = e.target.checked; savePicks(); renderPicks(); }
+  });
+  renderPicks();
+
+  /* ---- marquee ---- */
+  var mq = FLAVORS.map(function(f){ return '<span>'+esc(f.short)+'</span><span class="sl">/</span>'; }).join("");
+  $("marquee").innerHTML = mq + mq;
+
+  /* ---- showcase ---- */
+  $("showWords").innerHTML = FLAVORS.map(function(f){ return '<span>'+esc(f.short.toLowerCase())+'</span>'; }).join("");
+  $("showTicks").innerHTML = FLAVORS.map(function(){ return "<i></i>"; }).join("");
+  var show = $("show"), sticky = show.querySelector(".show-sticky"), words = $("showWords"), stick = $("stick");
+  var ticks = $("showTicks").children, cur = -1;
+  function setFlavor(i){
+    if (i === cur) return; cur = i; var f = FLAVORS[i];
+    sticky.style.setProperty("--fc", f.c); sticky.style.setProperty("--fi", f.ink);
+    $("showNum").textContent = "0" + (i+1);
+    $("showName").textContent = f.name;
+    $("showLine").textContent = f.line;
+    $("stickName").textContent = f.short;
+    $("showInsp").innerHTML = "Inspired by / " + (f.href ? '<a href="'+f.href+'" target="_blank" rel="noopener">'+esc(f.insp)+'</a>' : esc(f.insp));
+    for (var k=0;k<ticks.length;k++) ticks[k].classList.toggle("on", k===i);
+  }
+
+  /* ---- why reveal ---- */
+  var rv = $("reveal");
+  rv.innerHTML = rv.textContent.trim().split(/\s+/).map(function(w){
+    var hi = w.charAt(0) === "*"; if (hi) w = w.slice(1);
+    return '<span class="w'+(hi?" hi":"")+'">'+esc(w)+'</span>';
+  }).join(" ");
+  var rvWords = rv.querySelectorAll(".w");
+
+  /* ---- scroll loop ---- */
+  var progress = $("progress"), howBar = $("howBar"), how = $("how"), why = $("why");
+  function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  var ticking = false;
+  function onScroll(){
+    ticking = false;
+    var vh = window.innerHeight, doc = document.documentElement;
+    progress.style.width = (clamp(window.scrollY / (doc.scrollHeight - vh)) * 100) + "%";
+
+    var r = show.getBoundingClientRect();
+    var p = clamp(-r.top / (r.height - vh));
+    var i = Math.min(5, Math.floor(p * 6));
+    setFlavor(i);
+    var local = p * 6 - i;
+    var spans = words.children, f = Math.max(0, Math.min(5, p * 6 - 0.5)), a = Math.floor(f), b2 = Math.min(5, a + 1);
+    var ca = spans[a].offsetLeft + spans[a].offsetWidth / 2, cb = spans[b2].offsetLeft + spans[b2].offsetWidth / 2;
+    words.style.transform = "translate(" + (window.innerWidth / 2 - (ca + (cb - ca) * (f - a))) + "px,-50%)";
+    if (!reduce) {
+      stick.style.setProperty("--rot", ((local - 0.5) * 10).toFixed(2) + "deg");
+      stick.style.setProperty("--ty", ((local - 0.5) * 24).toFixed(1) + "px");
+    }
+
+    var wr = why.getBoundingClientRect();
+    var wp = clamp((vh * 0.85 - wr.top) / (wr.height * 0.9));
+    var n = Math.round(wp * rvWords.length);
+    for (var k=0;k<rvWords.length;k++) rvWords[k].classList.toggle("on", reduce || k < n);
+
+    var hr = how.getBoundingClientRect();
+    howBar.style.width = (clamp((vh * 0.8 - hr.top) / (hr.height)) * 100) + "%";
+  }
+  function req(){ if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }
+  window.addEventListener("scroll", req, {passive:true});
+  window.addEventListener("resize", req);
+  onScroll();
+
+  /* ---- calculator ---- */
+  var NUTR = [
+    {name:"Fiber", per:4, unit:"g", dv:28, note:"Daily value 28 g. Aim to reach"},
+    {name:"Sugar", per:4, unit:"g", dv:50, note:"Added sugars daily value 50 g. Stay under"},
+    {name:"Sodium", per:200, unit:"mg", dv:2300, note:"Daily value 2,300 mg. Stay under"},
+    {name:"Potassium", per:100, unit:"mg", dv:4700, note:"Daily value 4,700 mg. Aim to reach"},
+    {name:"Calories", per:25, unit:"cal", dv:2000, note:"Based on 2,000 a day"}
+  ];
+  var sticks = 1, MAX = 4;
+  $("calcRows").innerHTML = NUTR.map(function(n,i){
+    return '<div class="calc-row"><span class="name">'+n.name+'</span><span class="note">'+n.note+'</span>'+
+      '<span class="amt" id="amt'+i+'"></span><span class="pct" id="pct'+i+'"></span><span class="bar"><i id="bar'+i+'"></i></span></div>';
+  }).join("");
+  function renderCalc(){
+    $("sticks").textContent = sticks;
+    $("sticksLbl").textContent = sticks === 1 ? "STICK A DAY" : "STICKS A DAY";
+    $("minus").disabled = sticks <= 1; $("plus").disabled = sticks >= MAX;
+    NUTR.forEach(function(n,i){
+      var amt = n.per * sticks, pct = Math.round(amt / n.dv * 100);
+      $("amt"+i).textContent = amt.toLocaleString("en-US") + " " + n.unit;
+      $("pct"+i).textContent = pct + "% DV";
+      $("bar"+i).style.width = Math.min(100, pct) + "%";
+    });
+  }
+  $("minus").addEventListener("click", function(){ if (sticks > 1) { sticks--; renderCalc(); } });
+  $("plus").addEventListener("click", function(){ if (sticks < MAX) { sticks++; renderCalc(); } });
+  renderCalc();
+
+  /* ---- mock forms: nothing is sent or saved ---- */
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  ["heroForm","storyForm","joinForm"].forEach(function(id){
+    var form = $(id); if (!form) return;
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var msg = form.querySelector(".form-msg");
+      var email = form.querySelector('input[type="email"]');
+      var story = form.querySelector("textarea");
+      if (story && !story.value.trim()) { msg.textContent = "Tell us a little first."; story.focus(); return; }
+      if (email && (email.required || email.value.trim()) && !EMAIL.test(email.value.trim())) {
+        msg.textContent = "Please enter a valid email."; email.focus(); return;
+      }
+      msg.textContent = "Thanks! This is still a design mock, so nothing was saved. The real waitlist is coming soon.";
+    });
+  });
+
+  /* ---- menu ---- */
+  var menu = $("menu"), burger = $("burger");
+  function setMenu(open){
+    menu.classList.toggle("open", open);
+    menu.setAttribute("aria-hidden", open ? "false" : "true");
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    document.body.style.overflow = open ? "hidden" : "";
+    if (open) $("menuClose").focus(); else burger.focus();
+  }
+  burger.addEventListener("click", function(){ setMenu(true); });
+  $("menuClose").addEventListener("click", function(){ setMenu(false); });
+  menu.addEventListener("click", function(e){ if (e.target.tagName === "A") { menu.classList.remove("open"); menu.setAttribute("aria-hidden","true"); burger.setAttribute("aria-expanded","false"); document.body.style.overflow = ""; } });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && menu.classList.contains("open")) setMenu(false); });
+
+  $("yr").textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
