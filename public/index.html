@@ -366,7 +366,7 @@ textarea.field{min-height:150px;resize:vertical}
   </div>
   <div class="track" id="track" tabindex="0" aria-label="Flavor cards"></div>
   <div class="wrap">
-    <p class="fine">Taste notes are drafts. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
+    <p class="fine">Draft tasting direction from our own judgment, not lab data. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
     <div class="scroll-cue" aria-hidden="true">SCROLL</div>
   </div>
 </section>
@@ -548,22 +548,22 @@ textarea.field{min-height:150px;resize:vertical}
   var FLAVORS = [
     {id:"cucumber", name:"Salted Cucumber Mint", short:"Cucumber Mint", c:"#3FBF7A", ink:"#3A2A16",
      card:"Cool and fresh, and first in line for testing. We are also testing a zero-sugar version.",
-     line:"Cool.", insp:"A cool, fresh, less sweet taste", href:""},
+     line:"Cool.", m:[1,3,2,5], insp:"A cool, fresh, less sweet taste", href:""},
     {id:"watermelon", name:"Salted Watermelon", short:"Watermelon", c:"#FF4F7E", ink:"#3A2A16",
      card:"Juicy. We are testing chaat masala and chile-lime versions.",
-     line:"Juicy.", insp:"Watermelon with chaat masala", href:""},
+     line:"Juicy.", m:[3,3,1,5], insp:"Watermelon with chaat masala", href:""},
     {id:"mango", name:"Salted Mango", short:"Mango", c:"#FF8A1F", ink:"#3A2A16",
      card:"Sweet. We are testing chaat masala and chile-lime versions.",
-     line:"Sweet.", insp:"Mango with chaat masala and red chili", href:""},
+     line:"Sweet.", m:[4,3,2,3], insp:"Mango with chaat masala and red chili", href:""},
     {id:"guava", name:"Salted Guava", short:"Guava", c:"#FF9DB0", ink:"#3A2A16",
      card:"Tropical. Coming after the first three. We are testing it with chaat masala.",
-     line:"Tropical.", insp:"Guava with chaat masala", href:""},
+     line:"Tropical.", m:[3,3,2,3], insp:"Guava with chaat masala", href:""},
     {id:"plum", name:"Salted Plum", short:"Plum", c:"#7A3FB8", ink:"#FFF2D6",
      card:"Tangy. Later in our testing.",
-     line:"Tangy.", insp:"Later in our testing", href:""},
+     line:"Tangy.", m:[2,4,4,2], insp:"Later in our testing", href:""},
     {id:"lemon", name:"Salted Lemon", short:"Lemon", c:"#FFD23F", ink:"#3A2A16",
      card:"Bright and simple. Our test bench for salt, with a simple masala spice as one direction.",
-     line:"Bright.", insp:"Lemon with a simple masala spice", href:""}
+     line:"Bright.", m:[2,4,5,4], insp:"Lemon with a simple masala spice", href:""}
   ];
   var METER = ["Sweet","Salty","Tart","Fresh"];
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -578,9 +578,13 @@ textarea.field{min-height:150px;resize:vertical}
   /* ---- carousel ---- */
   var track = $("track");
   track.innerHTML = FLAVORS.map(function(f,i){
+    var meter = METER.map(function(label,k){
+      var bars = ""; for (var b=0;b<5;b++) bars += '<i class="'+(b<f.m[k]?"on":"")+'"></i>';
+      return '<span>'+label.toUpperCase()+'</span><span class="bars" role="img" aria-label="'+label+' '+f.m[k]+' of 5">'+bars+'</span>';
+    }).join("");
     return '<article class="card" style="--c:'+f.c+';--ci:'+f.ink+'">'+
       '<div class="card-top"><div class="row"><span class="num">0'+(i+1)+'</span><span class="chip chip--green">4 g fiber target</span></div><h3>'+esc(f.name).replace(" ","<br>")+'</h3></div>'+
-      '<div class="card-body"><p>'+esc(f.card)+'</p><p class="fine">Taste profile: coming after our blind taste tests.</p>'+
+      '<div class="card-body"><p>'+esc(f.card)+'</p><div class="meter">'+meter+'</div><p class="fine">Draft direction, not lab data.</p>'+
       '<button class="try" type="button" data-id="'+f.id+'" aria-pressed="false">I\'d try this</button></div></article>';
   }).join("");
   function cardStep(){ var c = track.querySelector(".card"); return c ? c.getBoundingClientRect().width + 22 : 300; }
