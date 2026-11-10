@@ -187,7 +187,7 @@ textarea.field{min-height:150px;resize:vertical}
 .who-card p{margin:0}
 
 /* ---------- showcase (sticky scroll) ---------- */
-.show{height:600vh;--fc:var(--lemon);--fi:var(--brown);border-top:3px solid var(--brown)}
+.show{height:600vh;--fc:var(--cucumber);--fi:var(--brown);border-top:3px solid var(--brown)}
 .show-sticky{position:sticky;top:var(--header-h);height:calc(100svh - var(--header-h));overflow:hidden;background:var(--fc);color:var(--fi);transition:background .5s,color .5s}
 .show-glow{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.35),transparent 55%)}
 .show-words{position:absolute;top:50%;left:0;transform:translateY(-50%);white-space:nowrap;will-change:transform;
@@ -413,16 +413,16 @@ textarea.field{min-height:150px;resize:vertical}
           <svg class="logo" viewBox="0 0 64 40"><path d="M16 38h34a12 12 0 0 0 1-24 16 16 0 0 0-30-4A12 12 0 0 0 16 38Z" fill="#3A2A16"/><path d="M33 15s-6 8-6 12a6 6 0 0 0 12 0c0-4-6-12-6-12Z" fill="var(--fc)"/></svg>
           <div class="brand">BOOND</div>
           <div class="salted">SALTED</div>
-          <div class="fname" id="stickName">Lemon</div>
+          <div class="fname" id="stickName">Cucumber Mint</div>
           <hr>
           <div class="desc">HYDRATION<br>WITH FIBER</div>
           <div class="nums">TARGETS: 4 G FIBER / 200 MG SODIUM<br>1 STICK + 12 OZ WATER</div>
         </div>
       </div>
       <div class="show-text" aria-live="polite">
-        <h3 id="showName">Salted Lemon</h3>
-        <p id="showLine">Bright.</p>
-        <p class="insp" id="showInsp">Inspired by / Lemon with a simple masala spice</p>
+        <h3 id="showName">Salted Cucumber Mint</h3>
+        <p id="showLine">Cool.</p>
+        <p class="insp" id="showInsp">Inspired by / A cool, fresh, less sweet taste</p>
       </div>
     </div>
   </div>
@@ -546,24 +546,24 @@ textarea.field{min-height:150px;resize:vertical}
 (function(){
   "use strict";
   var FLAVORS = [
-    {id:"lemon", name:"Salted Lemon", short:"Lemon", c:"#FFD23F", ink:"#3A2A16",
-     card:"Bright and simple. Our test bench for salt, with a simple masala spice as one direction.",
-     line:"Bright.", insp:"Lemon with a simple masala spice", href:""},
-    {id:"mango", name:"Salted Mango", short:"Mango", c:"#FF8A1F", ink:"#3A2A16",
-     card:"Sweet. We are testing chaat masala and chile-lime versions.",
-     line:"Sweet.", insp:"Mango with chaat masala and red chili", href:""},
+    {id:"cucumber", name:"Salted Cucumber Mint", short:"Cucumber Mint", c:"#3FBF7A", ink:"#3A2A16",
+     card:"Cool and fresh, and first in line for testing. We are also testing a zero-sugar version.",
+     line:"Cool.", insp:"A cool, fresh, less sweet taste", href:""},
     {id:"watermelon", name:"Salted Watermelon", short:"Watermelon", c:"#FF4F7E", ink:"#3A2A16",
      card:"Juicy. We are testing chaat masala and chile-lime versions.",
      line:"Juicy.", insp:"Watermelon with chaat masala", href:""},
+    {id:"mango", name:"Salted Mango", short:"Mango", c:"#FF8A1F", ink:"#3A2A16",
+     card:"Sweet. We are testing chaat masala and chile-lime versions.",
+     line:"Sweet.", insp:"Mango with chaat masala and red chili", href:""},
+    {id:"guava", name:"Salted Guava", short:"Guava", c:"#FF9DB0", ink:"#3A2A16",
+     card:"Tropical. Coming after the first three. We are testing it with chaat masala.",
+     line:"Tropical.", insp:"Guava with chaat masala", href:""},
     {id:"plum", name:"Salted Plum", short:"Plum", c:"#7A3FB8", ink:"#FFF2D6",
      card:"Tangy. Later in our testing.",
      line:"Tangy.", insp:"Later in our testing", href:""},
-    {id:"guava", name:"Salted Guava", short:"Guava", c:"#FF9DB0", ink:"#3A2A16",
-     card:"Tropical. We are testing it with chaat masala.",
-     line:"Tropical.", insp:"Guava with chaat masala", href:""},
-    {id:"cucumber", name:"Salted Cucumber Mint", short:"Cucumber Mint", c:"#3FBF7A", ink:"#3A2A16",
-     card:"Cool and fresh, and first in line for testing. We are also testing a zero-sugar version.",
-     line:"Cool.", insp:"A cool, fresh, less sweet taste", href:""}
+    {id:"lemon", name:"Salted Lemon", short:"Lemon", c:"#FFD23F", ink:"#3A2A16",
+     card:"Bright and simple. Our test bench for salt, with a simple masala spice as one direction.",
+     line:"Bright.", insp:"Lemon with a simple masala spice", href:""}
   ];
   var METER = ["Sweet","Salty","Tart","Fresh"];
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
