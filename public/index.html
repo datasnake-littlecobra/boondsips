@@ -335,7 +335,7 @@ textarea.field{min-height:150px;resize:vertical}
     <p class="pill"><i aria-hidden="true"></i>Launching soon</p>
     <p class="eyebrow">Salted sweet, by the drop</p>
     <h1><span class="l1">Hydration</span><span class="l2">with fiber.</span></h1>
-    <p class="lede">A fruit-flavored drink stick with a pinch of sea salt and 4&nbsp;g of fiber. Tear, pour, stir. Made for travel days, big meals and busy mornings.</p>
+    <p class="lede">A fruit-flavored drink stick with a pinch of sea salt and fiber. Tear, pour, stir. Made for travel days, big meals and busy mornings.</p>
     <div class="chips">
       <span class="chip chip--green">4 g fiber</span>
       <span class="chip">4 g sugar</span>
@@ -366,7 +366,7 @@ textarea.field{min-height:150px;resize:vertical}
   </div>
   <div class="track" id="track" tabindex="0" aria-label="Flavor cards"></div>
   <div class="wrap">
-    <p class="fine">Draft tasting direction from our own judgment, not lab data. Real taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
+    <p class="fine">Taste notes are drafts. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
     <div class="scroll-cue" aria-hidden="true">SCROLL</div>
   </div>
 </section>
@@ -384,7 +384,7 @@ textarea.field{min-height:150px;resize:vertical}
       <article class="who-card" style="--c:var(--lemon)">
         <div class="num">01</div>
         <h3>You grew up with it</h3>
-        <p>Nimbu pani, aam panna, chaas, salted plum, chile-lime on fruit. You know the taste, and you can't find it in a US store.</p>
+        <p>Nimbu pani, aam panna, chaas, salted plum, chile-lime on fruit. You know the taste. We could not find it in a US store either.</p>
       </article>
       <article class="who-card" style="--c:var(--orange)">
         <div class="num">02</div>
@@ -421,8 +421,8 @@ textarea.field{min-height:150px;resize:vertical}
       </div>
       <div class="show-text" aria-live="polite">
         <h3 id="showName">Salted Lemon</h3>
-        <p id="showLine">Sweet, sour, a pinch of salt.</p>
-        <p class="insp" id="showInsp">Inspired by / Nimbu pani, India's summer lemonade</p>
+        <p id="showLine">Bright.</p>
+        <p class="insp" id="showInsp">Inspired by / Lemon with a simple masala spice</p>
       </div>
     </div>
   </div>
@@ -432,7 +432,7 @@ textarea.field{min-height:150px;resize:vertical}
 <section class="why on-color" id="why">
   <div class="wrap">
     <p class="eyebrow">Why salt and fruit</p>
-    <p class="reveal" id="reveal">*Salt on fruit is *not a trend. It is how mango, melon, *lemon, plum, guava and *cucumber are eaten at *kitchen tables and street *stalls from India to *Japan to Mexico, and *cucumber gets its salt *too. We made it a drink.</p>
+    <p class="reveal" id="reveal">*Salt on fruit is *not a trend. In many homes it is *simply how fruit gets eaten. We *could not find that taste in a US store, so we *made it a drink.</p>
   </div>
 </section>
 <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -445,8 +445,8 @@ textarea.field{min-height:150px;resize:vertical}
     <div class="how-bar" aria-hidden="true"><i id="howBar"></i></div>
     <div class="steps">
       <div class="step" style="--c:var(--lemon)"><b>01</b><h3>Tear</h3><p>One stick fits a pocket, a carry-on or a glove box.</p></div>
-      <div class="step" style="--c:var(--orange)"><b>02</b><h3>Pour</h3><p>Into about 12 oz of water. Cold is best, room temperature works.</p></div>
-      <div class="step" style="--c:var(--pink)"><b>03</b><h3>Stir</h3><p>Ten seconds. Taste the fruit first, then the salt.</p></div>
+      <div class="step" style="--c:var(--orange)"><b>02</b><h3>Pour</h3><p>Into about 12 oz of water.</p></div>
+      <div class="step" style="--c:var(--pink)"><b>03</b><h3>Stir</h3><p>Stir until it dissolves.</p></div>
     </div>
   </div>
 </section>
@@ -547,29 +547,23 @@ textarea.field{min-height:150px;resize:vertical}
   "use strict";
   var FLAVORS = [
     {id:"lemon", name:"Salted Lemon", short:"Lemon", c:"#FFD23F", ink:"#3A2A16",
-     card:"The closest to a salted lemonade. The salt rounds off the sour.",
-     line:"Sweet, sour, a pinch of salt.", m:[2,4,5,4],
-     insp:"Nimbu pani, India's summer lemonade", href:""},
+     card:"Bright and simple. Our test bench for salt, with a simple masala spice as one direction.",
+     line:"Bright.", insp:"Lemon with a simple masala spice", href:""},
     {id:"mango", name:"Salted Mango", short:"Mango", c:"#FF8A1F", ink:"#3A2A16",
-     card:"Sweet ripe mango up front, a salty, tangy finish in the background.",
-     line:"Ripe, round, a little tangy.", m:[4,3,2,3],
-     insp:"Aam panna, a green-mango summer cooler", href:""},
+     card:"Sweet. We are testing chaat masala and chile-lime versions.",
+     line:"Sweet.", insp:"Mango with chaat masala and red chili", href:""},
     {id:"watermelon", name:"Salted Watermelon", short:"Watermelon", c:"#FF4F7E", ink:"#3A2A16",
-     card:"Like a cold slice with a shake of salt. Light and juicy.",
-     line:"Juicy and light, with a shake of salt.", m:[3,3,1,5],
-     insp:"A cold slice with salt on a hot afternoon", href:""},
+     card:"Juicy. We are testing chaat masala and chile-lime versions.",
+     line:"Juicy.", insp:"Watermelon with chaat masala", href:""},
     {id:"plum", name:"Salted Plum", short:"Plum", c:"#7A3FB8", ink:"#FFF2D6",
-     card:"Deep and tart. Closer to a salted dried plum than to candy.",
-     line:"Dark, tart, salty-sour.", m:[2,4,4,2],
-     insp:"Umeboshi, Japan's salted plum", href:""},
+     card:"Tangy. Later in our testing.",
+     line:"Tangy.", insp:"Later in our testing", href:""},
     {id:"guava", name:"Salted Guava", short:"Guava", c:"#FF9DB0", ink:"#3A2A16",
-     card:"Floral pink guava with a salty edge, like a wedge from a street cart.",
-     line:"Floral, pink, a salty edge.", m:[3,3,2,3],
-     insp:"Guava with salt and chili from a street cart", href:""},
+     card:"Tropical. We are testing it with chaat masala.",
+     line:"Tropical.", insp:"Guava with chaat masala", href:""},
     {id:"cucumber", name:"Salted Cucumber Mint", short:"Cucumber Mint", c:"#3FBF7A", ink:"#3A2A16",
-     card:"Cool cucumber, a little mint, a pinch of salt. The least sweet of the six.",
-     line:"Cool, green, barely sweet.", m:[1,3,2,5],
-     insp:"Cucumber with salt and lime", href:""}
+     card:"Cool and fresh, and first in line for testing. We are also testing a zero-sugar version.",
+     line:"Cool.", insp:"A cool, fresh, less sweet taste", href:""}
   ];
   var METER = ["Sweet","Salty","Tart","Fresh"];
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -584,13 +578,9 @@ textarea.field{min-height:150px;resize:vertical}
   /* ---- carousel ---- */
   var track = $("track");
   track.innerHTML = FLAVORS.map(function(f,i){
-    var meter = METER.map(function(label,k){
-      var bars = ""; for (var b=0;b<5;b++) bars += '<i class="'+(b<f.m[k]?"on":"")+'"></i>';
-      return '<span>'+label.toUpperCase()+'</span><span class="bars" role="img" aria-label="'+label+' '+f.m[k]+' of 5">'+bars+'</span>';
-    }).join("");
     return '<article class="card" style="--c:'+f.c+';--ci:'+f.ink+'">'+
-      '<div class="card-top"><div class="row"><span class="num">0'+(i+1)+'</span><span class="chip chip--green">4 g fiber</span></div><h3>'+esc(f.name).replace(" ","<br>")+'</h3></div>'+
-      '<div class="card-body"><p>'+esc(f.card)+'</p><div class="meter">'+meter+'</div>'+
+      '<div class="card-top"><div class="row"><span class="num">0'+(i+1)+'</span><span class="chip chip--green">4 g fiber target</span></div><h3>'+esc(f.name).replace(" ","<br>")+'</h3></div>'+
+      '<div class="card-body"><p>'+esc(f.card)+'</p><p class="fine">Taste profile: coming after our blind taste tests.</p>'+
       '<button class="try" type="button" data-id="'+f.id+'" aria-pressed="false">I\'d try this</button></div></article>';
   }).join("");
   function cardStep(){ var c = track.querySelector(".card"); return c ? c.getBoundingClientRect().width + 22 : 300; }
