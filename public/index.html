@@ -109,7 +109,12 @@ textarea.field{min-height:150px;resize:vertical}
 .form-row .field{max-width:640px}
 .consent{font-size:.95rem;color:var(--muted);max-width:640px;margin:0}
 .on-color .consent{color:#5A4328}
-.mock-note{display:inline-block;font-size:.85rem;font-weight:800;color:var(--brown);background:var(--lemon);border:2px dashed var(--brown);border-radius:10px;padding:6px 10px;margin:0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.consent-check{display:flex;gap:12px;align-items:flex-start;max-width:640px;font-size:.95rem;color:var(--muted);cursor:pointer}
+.consent-check input{flex:none;width:24px;height:24px;margin:2px 0 0;accent-color:var(--brown);cursor:pointer}
+.on-color .consent-check{color:#5A4328}
+.join .consent-check,.join .consent{color:#3A2A16}
+.btn[disabled]{opacity:.6;cursor:wait}
 .form-msg{font-weight:800;min-height:1.4em;margin:0}
 .checks{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px}
 .checks legend{font-weight:800;margin-bottom:10px;padding:0}
@@ -347,9 +352,9 @@ textarea.field{min-height:150px;resize:vertical}
     <form class="form-row" id="heroForm" novalidate>
       <label class="sr-only" for="heroEmail">Your email</label>
       <input class="field" id="heroEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
+      <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn" type="submit">Join waitlist</button>
-      <p class="consent">First taste test and launch news only. Unsubscribe anytime.</p>
-      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
       <p class="form-msg" role="status" aria-live="polite"></p>
     </form>
   </div>
@@ -494,9 +499,10 @@ textarea.field{min-height:150px;resize:vertical}
       <textarea class="field" id="storyText" name="story" maxlength="1000" placeholder="The salty-sweet drink I remember is..." required></textarea>
       <label class="sr-only" for="storyEmail">Your email (optional)</label>
       <input class="field" id="storyEmail" name="email" type="email" autocomplete="email" placeholder="Your email (optional)">
+      <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn btn--ghost" type="submit">Send my story</button>
-      <p class="consent">We only use your story to plan flavors. We will not publish it or your name without asking you first. Leave your email if you want waitlist news too, and you can unsubscribe anytime.</p>
-      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
+      <p class="consent">We only use your story to plan flavors. We will not publish it or your name without asking you first. Tick the box above only if you added your email and want waitlist news too.</p>
       <p class="form-msg" role="status" aria-live="polite"></p>
     </form>
   </div>
@@ -513,9 +519,10 @@ textarea.field{min-height:150px;resize:vertical}
       <fieldset class="checks" id="joinPicks">
         <legend>Flavors I'd try (optional)</legend>
       </fieldset>
+      <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn" type="submit">Join the waitlist</button>
-      <p class="consent">By joining, you agree we can email you about the Boond taste test and launch. Nothing else, and we never sell or share your email. Every email has an unsubscribe link, or write to <a href="mailto:hello@boondsips.com">hello@boondsips.com</a> and we will remove you.</p>
-      <p class="mock-note">This is a design mock. Nothing is saved yet.</p>
+      <p class="consent">We collect your email, optional flavor picks and an optional story, only to plan the taste test and launch. To see or delete what we have about you, write to <a href="mailto:hello@boondsips.com">hello@boondsips.com</a>.</p>
       <p class="form-msg" role="status" aria-live="polite"></p>
     </form>
   </div>
@@ -611,6 +618,7 @@ textarea.field{min-height:150px;resize:vertical}
   track.addEventListener("click", function(e){
     var b = e.target.closest(".try"); if (!b) return;
     picks[b.dataset.id] = !picks[b.dataset.id]; savePicks(); renderPicks();
+    if (picks[b.dataset.id]) sendVote(b.dataset.id);
   });
   $("joinPicks").addEventListener("change", function(e){
     if (e.target.name === "flavors") { picks[e.target.value] = e.target.checked; savePicks(); renderPicks(); }
@@ -708,20 +716,58 @@ textarea.field{min-height:150px;resize:vertical}
   $("plus").addEventListener("click", function(){ if (sticks < MAX) { sticks++; renderCalc(); } });
   renderCalc();
 
-  /* ---- mock forms: nothing is sent or saved ---- */
+  /* ---- waitlist: real signup via a Supabase Edge Function (no keys on this page) ---- */
+  var API = "https://lkytlauunqhhfjyjqmsb.supabase.co/functions/v1/boond-waitlist";
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var ERR = {
+    invalid_email: "Please enter a valid email.",
+    consent_required: "Please tick the box so we can email you.",
+    invalid_story: "Please write a short story (up to 1,000 characters).",
+    busy: "We are getting a lot of sign-ups right now. Please try again in a minute."
+  };
+  var GENERIC = "Something went wrong. Please try again, or write to hello@boondsips.com.";
+  function post(payload){
+    return fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }, function(){ return {ok:r.ok, body:{}}; }); });
+  }
+  function pickedIds(){ return Object.keys(picks).filter(function(k){ return picks[k]; }); }
+  var voted = {};
+  try { voted = JSON.parse(localStorage.getItem("boondVoted") || "{}") || {}; } catch(e) { voted = {}; }
+  function sendVote(flavor){
+    if (voted[flavor]) return;
+    voted[flavor] = true;
+    try { localStorage.setItem("boondVoted", JSON.stringify(voted)); } catch(e){}
+    post({action:"vote", flavor:flavor}).catch(function(){});
+  }
   ["heroForm","storyForm","joinForm"].forEach(function(id){
     var form = $(id); if (!form) return;
+    var msg = form.querySelector(".form-msg"), btn = form.querySelector('button[type="submit"]');
     form.addEventListener("submit", function(e){
       e.preventDefault();
-      var msg = form.querySelector(".form-msg");
-      var email = form.querySelector('input[type="email"]');
-      var story = form.querySelector("textarea");
-      if (story && !story.value.trim()) { msg.textContent = "Tell us a little first."; story.focus(); return; }
-      if (email && (email.required || email.value.trim()) && !EMAIL.test(email.value.trim())) {
-        msg.textContent = "Please enter a valid email."; email.focus(); return;
+      var email = form.querySelector('input[type="email"]'), emailVal = email ? email.value.trim() : "";
+      var consent = form.querySelector('input[name="consent"]'), consented = !!(consent && consent.checked);
+      var hp = form.querySelector('input[name="website"]'), story = form.querySelector("textarea"), payload;
+      msg.textContent = "";
+      if (id === "storyForm") {
+        if (!story.value.trim()) { msg.textContent = "Tell us a little first."; story.focus(); return; }
+        if (emailVal && !EMAIL.test(emailVal)) { msg.textContent = ERR.invalid_email; email.focus(); return; }
+        if (emailVal && !consented) { msg.textContent = ERR.consent_required; consent.focus(); return; }
+        payload = {action:"story", story:story.value.trim(), email:emailVal, consent:consented};
+      } else {
+        if (!EMAIL.test(emailVal)) { msg.textContent = ERR.invalid_email; email.focus(); return; }
+        if (!consented) { msg.textContent = ERR.consent_required; consent.focus(); return; }
+        payload = {action:"signup", email:emailVal, consent:true, source:(id === "heroForm" ? "hero" : "join"), flavors:pickedIds()};
       }
-      msg.textContent = "Thanks! This is still a design mock, so nothing was saved. The real waitlist is coming soon.";
+      payload.website = hp ? hp.value : "";
+      btn.disabled = true;
+      post(payload).then(function(res){
+        if (res.ok && res.body && res.body.ok) {
+          msg.textContent = id === "storyForm" ? "Thank you for sharing your story." : "You're on the list. Thank you!";
+          form.reset(); renderPicks();
+        } else {
+          msg.textContent = ERR[res.body && res.body.error] || GENERIC;
+        }
+      }).catch(function(){ msg.textContent = GENERIC; }).then(function(){ btn.disabled = false; });
     });
   });
 
