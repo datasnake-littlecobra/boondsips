@@ -130,6 +130,9 @@ textarea.field{min-height:150px;resize:vertical}
 .hero h1 .l1{color:var(--cream);display:block}
 .hero h1 .l2{color:var(--orange);display:block}
 .hero .lede{max-width:600px;color:var(--ink);opacity:.9}
+.pill{display:inline-flex;align-items:center;gap:10px;margin:0 0 22px;padding:10px 18px;font:800 .95rem/1 "Nunito",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--brown);background:var(--lemon);border:3px solid var(--brown);border-radius:999px;box-shadow:4px 4px 0 var(--brown)}
+.pill i{width:12px;height:12px;border-radius:50%;background:var(--cta);border:2px solid var(--brown);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.4)}}
 .chips{display:flex;flex-wrap:wrap;gap:16px 14px;margin:30px 0 10px}
 .targets{font-size:.9rem;color:var(--muted);margin:14px 0 34px}
 .hero .form-row{gap:24px}
@@ -283,7 +286,7 @@ textarea.field{min-height:150px;resize:vertical}
 
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
-  .marquee-inner,.scroll-cue::before{animation:none}
+  .marquee-inner,.scroll-cue::before,.pill i{animation:none}
   .stick{transform:none!important}
 }
 @media (min-width:860px){
@@ -329,7 +332,8 @@ textarea.field{min-height:150px;resize:vertical}
 <!-- HERO -->
 <section class="hero">
   <div class="wrap">
-    <p class="eyebrow">Salted sweet, by the drop &nbsp;/&nbsp; Taste testers wanted</p>
+    <p class="pill"><i aria-hidden="true"></i>Launching soon</p>
+    <p class="eyebrow">Salted sweet, by the drop</p>
     <h1><span class="l1">Hydration</span><span class="l2">with fiber.</span></h1>
     <p class="lede">A fruit-flavored drink stick with a pinch of sea salt and 4&nbsp;g of fiber. Tear, pour, stir. Made for travel days, big meals and busy mornings.</p>
     <div class="chips">
