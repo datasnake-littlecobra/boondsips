@@ -326,7 +326,7 @@ body { margin: 0; padding-block: 0; }
     { q: 'A company builds a gadget because its engineers love it, and never asks shoppers what they want. Which orientation is this, and what is the risk?',
       o: ['Production concept, building too cheaply', 'Product concept, marketing myopia', 'Sales concept, pushing too hard', 'Societal concept, overspending'], c: 1,
       e: 'The product concept focuses on making a superior product. The danger is falling in love with it and missing what the market needs.', p: 'p. 28' },
-    { q: 'A shopper asks for "a healthy drink." You ask what healthy means to them: less sugar, more fiber, something else. Which type of need are you uncovering?',
+    { q: 'A shopper asks for "something salty and sweet to drink." You ask what they mean: how salty, how sweet, and when they will drink it. Which type of need are you uncovering?',
       o: ['Stated need', 'Delight need', 'Real need', 'Secret need'], c: 2,
       e: 'The stated need is the sentence the customer says. The real need is what that sentence actually means.', p: 'p. 30' },
     { q: 'Which line works best as a value proposition?',
@@ -341,24 +341,12 @@ body { margin: 0; padding-block: 0; }
   ];
 
   var TRACKS = {
-    mine: { name: 'Your brand', kind: 'Anything you are building', who: 'Who buys it and who uses it? They may be different people.',
+    mine: { name: 'Your brand', nm: 'Type the name of what you are building. It only appears in your copied answers.', kind: 'Anything you are building', who: 'Who buys it and who uses it? They may be different people.',
       vp: 'Finish this in one sentence: for [customer], [brand] is the [category] that [benefit], unlike [alternative].',
       place: 'Where does someone first meet it: a shelf, a search result, a friend, an app store?',
       need: 'Someone asks for what they want. What do they say, what do they mean, and what might they not admit?',
       env: 'Name one competitor or substitute, and one PESTLE factor that could change things for you.',
       claim: 'Which claim about your brand would you need proof for before saying it publicly?', start: {} },
-    foundeez: { name: 'Foundeez', kind: 'App and community', who: 'Who buys and who uses it? Founders, investors, sponsors, or all of them?',
-      vp: 'What do early-stage founders get here that they cannot get from a group chat or a social feed?',
-      place: 'Where do founders already spend time, and how do they find you?',
-      need: 'What would a founder say they want, and what might they really want?',
-      env: 'Name one competitor or substitute, and one PESTLE factor that could change things.',
-      claim: 'What claim about results or community size would you need proof for before saying it publicly?', start: {} },
-    datasnake: { name: 'DataSnake', kind: 'Hardware and deep tech', who: 'The buyer, the person who deploys it, and the person who uses the data can be three different people. Who are they?',
-      vp: 'What does a customer get from modular sensors across ground, surface water and underwater that they cannot get today?',
-      place: 'Does a sensor reach customers through direct sales, partners, distributors or tenders?',
-      need: 'What does a customer say they want, and what are they really trying to avoid or prove?',
-      env: 'Name one competitor or substitute, and one PESTLE factor (regulation and funding often matter here).',
-      claim: 'Which performance claim would you need test data for before saying it publicly?', start: {} },
     boond: { name: 'Boond', kind: 'Physical consumer product', who: 'Who buys it and who drinks it? They may not be the same person.',
       vp: 'Finish this in one sentence: for [customer], Boond is the [category] that [benefit], unlike [alternative].',
       place: 'Where will someone first meet it: a shelf, a checkout page, a friend\'s kitchen?',
@@ -489,6 +477,7 @@ body { margin: 0; padding-block: 0; }
   try { saved = JSON.parse(store(true, 'mip-m1-apply') || '{}') || {}; } catch (e) { saved = {}; }
   var pa = $('p-apply');
   var FIELDS = [
+    ['name', 'Name of your brand or project', 'nm', 'text'],
     ['who', 'Customer or consumer?', 'who', 'text'],
     ['vp', 'Your value proposition', 'vp', 'area'],
     ['p4', 'The 4 Ps in one line each', null, 'p4'],
@@ -523,6 +512,7 @@ body { margin: 0; padding-block: 0; }
     var t = TRACKS[curTrack], html = '';
     FIELDS.forEach(function (f) {
       var id = 'f-' + f[0];
+      if (f[0] === 'name' && curTrack !== 'mine') return;
       if (f[3] === 'p4') {
         html += '<div class="field"><label>' + f[1] + '</label><div class="hint">' + esc(t.place) + '</div><div class="p4">' +
           ['product', 'price', 'promotion', 'place'].map(function (k) { return '<div><label for="f-' + k + '">' + k.charAt(0).toUpperCase() + k.slice(1) + '</label><input type="text" id="f-' + k + '" data-f="' + k + '"></div>'; }).join('') + '</div></div>';
@@ -543,7 +533,7 @@ body { margin: 0; padding-block: 0; }
     });
   }
   $('copyans').addEventListener('click', function () {
-    var t = TRACKS[curTrack], L = ['Marketing in Public, Module 1: ' + t.name];
+    var t = TRACKS[curTrack], L = ['Marketing in Public, Module 1: ' + ((curTrack === 'mine' && val('mine', 'name')) || t.name)];
     var names = { who: 'Customer or consumer', vp: 'Value proposition', product: 'Product', price: 'Price', promotion: 'Promotion', place: 'Place', need: 'Needs (stated, real, secret)', env: 'Competitor and PESTLE', claim: 'Claim needing proof' };
     ['who', 'vp', 'product', 'price', 'promotion', 'place', 'need', 'env', 'claim'].forEach(function (f) { L.push(names[f] + ': ' + (val(curTrack, f) || '(blank)')); });
     var text = L.join('\n');

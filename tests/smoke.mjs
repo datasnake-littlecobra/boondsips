@@ -152,6 +152,18 @@ let hubItems = [];
   check(await page.locator("#fb .fb").isVisible(), "quiz shows feedback after an answer");
   await page.click(".tab[data-tab=apply]"); await page.fill("#f-vp", "test sentence");
   check(((await page.evaluate(() => localStorage.getItem("mip-m1-apply"))) || "").includes("test sentence"), "apply-it answers are saved in localStorage");
+  // Apply-it: Boond is the only worked example; "Your brand" has a name field so others can try it
+  check(!/Foundeez|DataSnake|healthy/i.test(await page.content()), "module 1 has no Foundeez, DataSnake or 'healthy'");
+  check((await page.locator(".track").count()) === 2, "Apply-it offers two tracks: Your brand and Boond");
+  await page.fill("#f-name", "Acme Salt Co");
+  await page.click("#copyans");
+  check(((await page.inputValue("#copyta")) || "").startsWith("Marketing in Public, Module 1: Acme Salt Co"), "copied answers use the typed brand name");
+  await page.click(".track[data-t=boond]");
+  check((await page.locator("#f-name").count()) === 0, "Boond track has no name field");
+  await page.click("#copyans");
+  check(((await page.inputValue("#copyta")) || "").startsWith("Marketing in Public, Module 1: Boond\n"), "Boond track copies as 'Boond'");
+  await page.click(".track[data-t=mine]");
+  check((await page.inputValue("#f-name")) === "Acme Salt Co", "typed brand name is remembered in this browser");
   check(external.length === 0, "module 1 makes no network calls except fonts", external.join(" | "));
   check(page.errors.length === 0, "module 1: no console errors", page.errors.join(" | "));
 
