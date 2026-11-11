@@ -19,6 +19,18 @@ Static site for **Boond** (salted sweet, by the drop) at boondsips.com.
   - Production branch: `main`
 - One deploy target only. Do not also connect this repo to Hostinger's Git deployment.
 
+## Waitlist (live)
+
+- The three forms (hero, story, join) post to a Supabase Edge Function, `boond-waitlist`
+  (source: `supabase/functions/boond-waitlist/index.ts`). The function holds the database key
+  inside Supabase, so **no key is ever on this site or in this repo**.
+- Data lives in three locked-down tables (`boond_waitlist_signups`, `boond_flavor_votes`,
+  `boond_stories`; schema in `supabase/migrations/`). Row-level security is on and the public roles
+  have no access.
+- `CONSENT_TEXT` in the function must match the consent text next to the checkboxes on the page.
+- Unsubscribe page: `/unsubscribe/?t=<token>`. Each signup has an unsubscribe token in the database.
+- Redeploy the function with the Supabase dashboard or CLI. It is not deployed by Cloudflare.
+
 ## Domain and email
 
 - boondsips.com stays registered at Hostinger; its DNS (nameservers) points to Cloudflare.
