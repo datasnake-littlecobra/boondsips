@@ -105,8 +105,7 @@ let hubItems = [];
   check(page.url().endsWith("/learn/"), "course index 'All lessons' link goes back to the hub");
   check(page.errors.length === 0, "course index: no console errors", page.errors.join(" | "));
 
-  // Every live module must load, link back to the course index, and have no console errors.
-  // (Tab switching and the donate link are covered once Module 1 is added.)
+  // Every live module must load, link back to the course index, and have no console errors. (Module-specific tab, donate and keyboard checks are in the Module 1 block below.)
   for (const m of modules.filter((x) => String(x.status).toLowerCase() === "live")) {
     const mp = await newPage(390);
     const status = await open(mp, `/learn/marketing/${m.url}`);
@@ -116,6 +115,72 @@ let hubItems = [];
     check(mp.errors.length === 0, `module ${m.number}: no console errors`, mp.errors.join(" | "));
   }
   if (liveCount === 0) console.log("NOTE  no live modules yet, so no module page checks ran");
+}
+
+// ---------- Module 1: wrapper, tabs, hash routing, donate link, keyboard, no network ----------
+{
+  const M1 = "/learn/marketing/module-1/";
+  const page = await newPage(390);
+  const external = [];
+  page.on("request", (r) => {
+    const u = new URL(r.url());
+    if (!u.protocol.startsWith("http") || u.origin === BASE || /^fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)) return;
+    external.push(r.url());
+  });
+  check((await open(page, M1)) === 200, "module 1 loads");
+  check(await page.locator(".bn-header").isVisible() && await page.locator(".bn-footer").isVisible(), "module 1 has the site header and footer");
+  check(await page.locator(".bn-header a[href='../../']").isVisible(), "module 1: header Learn button shows at 390px");
+  check((await page.locator(".foot-note").innerText()).includes("Access for free at openstax.org"), "module 1 keeps the OpenStax credit");
+  check(!/Boond Sips/.test(await page.content()), "module 1 never says 'Boond Sips'");
+
+  // four tabs switch, panels follow, hash follows
+  const tabs = ["learn", "cards", "quiz", "apply"];
+  for (const t of tabs) {
+    await page.click(`.tab[data-tab=${t}]`);
+    const visible = await Promise.all(tabs.map((x) => page.locator(`#p-${x}`).isVisible()));
+    check(visible.every((v, i) => v === (tabs[i] === t)) && (await page.locator(`.tab[data-tab=${t}]`).getAttribute("aria-selected")) === "true" && page.url().endsWith("#" + t), `tab "${t}" switches (panel, aria-selected, #hash)`);
+    check(await noSideScroll(page), `module 1: no sideways scroll on the ${t} tab at 390px`);
+  }
+  // hash routing on first load
+  await page.goto(BASE + M1 + "#quiz");
+  check(await page.locator("#p-quiz").isVisible() && !(await page.locator("#p-learn").isVisible()), "opening #quiz shows the Quiz tab");
+
+  // flashcards and quiz respond; apply-it answers stay in localStorage
+  await page.click(".tab[data-tab=cards]"); await page.click("#flip");
+  check((await page.locator("#card").getAttribute("class")).includes("flipped"), "flashcard flips");
+  await page.click(".tab[data-tab=quiz]"); await page.locator(".opt").first().click();
+  check(await page.locator("#fb .fb").isVisible(), "quiz shows feedback after an answer");
+  await page.click(".tab[data-tab=apply]"); await page.fill("#f-vp", "test sentence");
+  check(((await page.evaluate(() => localStorage.getItem("mip-m1-apply"))) || "").includes("test sentence"), "apply-it answers are saved in localStorage");
+  check(external.length === 0, "module 1 makes no network calls except fonts", external.join(" | "));
+  check(page.errors.length === 0, "module 1: no console errors", page.errors.join(" | "));
+
+  // back link goes to the course index
+  await Promise.all([page.waitForURL("**/learn/marketing/"), page.locator(".bn-back").click()]);
+  check(page.url().endsWith("/learn/marketing/"), "module 1 'All modules' link goes to /learn/marketing/");
+
+  // donate link: hidden by default, shown only for an https URL
+  const d = await newPage(390);
+  await open(d, M1);
+  check(await d.locator("#donate-wrap").isHidden(), "donate link is hidden by default");
+  for (const [url, shown] of [["https://example.org/give", true], ["http://example.org/give", false], ["javascript:alert(1)", false]]) {
+    const dp = await newPage(390);
+    await dp.route("**/learn/config.js", (r) => r.fulfill({ contentType: "text/javascript", body: `window.MIP_CONFIG={donateUrl:${JSON.stringify(url)}};` }));
+    await open(dp, M1);
+    const vis = await dp.locator("#donate-wrap").isVisible();
+    check(vis === shown && (!shown || (await dp.locator("#donate-link").getAttribute("href")) === url), `donateUrl ${url} -> link ${shown ? "shown" : "hidden"}`);
+  }
+
+  // keyboard: all four tabs can be reached with the Tab key
+  const k = await newPage(390);
+  await open(k, M1);
+  const reached = new Set();
+  for (let i = 0; i < 40; i++) {
+    await k.keyboard.press("Tab");
+    const t = await k.evaluate(() => document.activeElement && document.activeElement.dataset && document.activeElement.dataset.tab);
+    if (t) reached.add(t);
+  }
+  check(tabs.every((t) => reached.has(t)), "all four tabs are reachable with the keyboard", [...reached].join(","));
 }
 
 // ---------- Config ----------

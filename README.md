@@ -39,7 +39,10 @@ Static site for **Boond** (salted sweet, by the drop) at boondsips.com.
 - Shared files: `public/learn/learn.css`, `public/learn/learn.js`, and `public/learn/config.js`
   (`donateUrl` is empty by default, which hides the donate link).
 - **Add a module:** put its page at `public/learn/marketing/module-N/index.html`, then change that module's
-  `status` to `"live"` in `modules.js`.
+  `status` to `"live"` in `modules.js`. Wrap a new module page the way `module-1` is wrapped: the `bn-` header,
+  the "All modules" back link and the `bn-` footer (their styles are inside the page, prefixed `bn-` so they never
+  clash with the module's own styles), and `<script src="../../config.js"></script>` before the module's script.
+  Keep the module's own content and its OpenStax credit as they are.
 - No analytics, cookies or third-party scripts. The only outside request is the Google Fonts stylesheet,
   the same as the main page.
 

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Module 1: Why Marketing Matters · Marketing in Public · Boond</title>
+<meta name="description" content="Study notes, flashcards, a quiz and a practice tool on what marketing is, the five-step process and the 4 Ps.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 26'%3E%3Cpath d='M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z' fill='%2314B5B0' stroke='%233A2A16' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=IBM+Plex+Mono:wght@400;500&family=Fredoka:wght@600;700&family=Nunito:wght@700;800&display=swap">
+<style>
+/* Layout: one narrow reading column, index-card flashcards, highlighter marks on key terms.
+   Palette: ink navy, paper blue-grey, cobalt for actions, highlighter yellow for key terms. */
+:root {
+  --bg: #EEF1F6;
+  --surface: #FFFFFF;
+  --surface-2: #E3E8F1;
+  --ink: #13203B;
+  --muted: #55627C;
+  --line: #CBD3E1;
+  --accent: #2B4FE0;
+  --accent-ink: #FFFFFF;
+  --mark: #FFD84A;
+  --good: #16794C;
+  --good-bg: #DDF3E8;
+  --bad: #B4291F;
+  --bad-bg: #FBE3E0;
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1424; --surface: #172039; --surface-2: #202B4A; --ink: #E9EEFA; --muted: #9AA7C4;
+    --line: #2E3B5E; --accent: #8FA6FF; --accent-ink: #0E1424; --mark: #E0B820;
+    --good: #6FDDA6; --good-bg: #12362A; --bad: #FF9C92; --bad-bg: #3E1C1A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1424; --surface: #172039; --surface-2: #202B4A; --ink: #E9EEFA; --muted: #9AA7C4;
+  --line: #2E3B5E; --accent: #8FA6FF; --accent-ink: #0E1424; --mark: #E0B820;
+  --good: #6FDDA6; --good-bg: #12362A; --bad: #FF9C92; --bad-bg: #3E1C1A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+p { margin: 0 0 12px; max-width: 65ch; }
+p:last-child { margin-bottom: 0; }
+ul, ol { margin: 0 0 12px; padding-left: 22px; max-width: 65ch; }
+li { margin-bottom: 6px; }
+mark { background: linear-gradient(transparent 52%, var(--mark) 52%); color: inherit; padding: 0 2px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.mono { font-family: var(--f-mono); font-size: 12px; letter-spacing: .04em; }
+
+/* header */
+.top { display: grid; gap: 6px; }
+.series { color: var(--muted); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 600; }
+h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; }
+.sub { color: var(--muted); max-width: 60ch; }
+.roadmap { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.chip.live { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+.chip.bonus { border-style: dashed; }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 2px solid var(--line); }
+.tab { flex: none; background: none; border: 0; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.panel[hidden] { display: none !important; }
+.panel { display: grid; gap: 16px; }
+.note { color: var(--muted); font-size: 14px; }
+
+/* learn */
+.block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.block h2 { font-size: 22px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.pg { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .04em; }
+.steps { counter-reset: s; list-style: none; padding: 0; display: grid; gap: 8px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; margin: 0; }
+.steps li::before { content: counter(s); font-family: var(--f-display); font-weight: 800; background: var(--ink); color: var(--bg); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; font-size: 14px; }
+
+/* flashcards */
+.deckbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.scene { perspective: 1400px; }
+.card { display: grid; width: 100%; min-height: 280px; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3,.7,.2,1); background: none; border: 0; padding: 0; text-align: left; }
+.card.flipped { transform: rotateY(180deg); }
+.face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--surface); border: 1px solid var(--line); border-top: 8px solid var(--accent); border-radius: 12px; padding: 22px 22px 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; min-width: 0; }
+.face.back { transform: rotateY(180deg); border-top-color: var(--mark); }
+.face .tag { color: var(--muted); }
+.face .q { font-family: var(--f-display); font-weight: 700; font-size: clamp(22px, 4.6vw, 30px); line-height: 1.2; text-wrap: balance; }
+.face .a { font-size: 18px; line-height: 1.5; }
+.face .a ul { margin: 0; padding-left: 20px; }
+.face .foot { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 16px; font-weight: 600; min-height: 44px; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.known[aria-pressed="true"] { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+.btn:disabled { opacity: .45; cursor: default; }
+.meter { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.meter > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+
+/* quiz */
+.qcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; gap: 16px; }
+.qcard h2 { font-size: 22px; }
+.opts { display: grid; gap: 10px; }
+.opt { text-align: left; background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; min-height: 48px; display: flex; gap: 10px; align-items: baseline; }
+.opt .k { font-family: var(--f-mono); font-weight: 500; color: var(--muted); }
+.opt:hover:not([disabled]) { border-color: var(--accent); }
+.opt.right { background: var(--good-bg); border-color: var(--good); }
+.opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+.opt[disabled] { cursor: default; }
+.fb { border-radius: 10px; padding: 12px 14px; background: var(--surface-2); }
+.fb b.ok { color: var(--good); } .fb b.no { color: var(--bad); }
+.score { font-family: var(--f-display); font-size: 56px; font-weight: 800; line-height: 1; }
+.missed { padding-left: 20px; }
+
+/* apply */
+.tracks { display: flex; gap: 8px; flex-wrap: wrap; }
+.track { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 14px; font-weight: 600; text-align: left; }
+.track small { display: block; font-weight: 400; color: var(--muted); }
+.track[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.field { display: grid; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.field label { font-weight: 700; }
+.field .hint { color: var(--muted); font-size: 14px; }
+textarea, input[type="text"] { font: inherit; width: 100%; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; resize: vertical; }
+textarea { min-height: 64px; }
+.p4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.p4 label { font-weight: 600; font-size: 14px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--f-display); font-size: 14px; background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 700; white-space: nowrap; }
+.out { width: 100%; min-height: 120px; font-family: var(--f-mono); font-size: 13px; }
+
+/* reel */
+.beats { list-style: none; padding: 0; display: grid; gap: 10px; max-width: none; }
+.beat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; margin: 0; }
+.beat .say { font-size: 18px; line-height: 1.5; }
+.overlay { display: inline-block; font-family: var(--f-mono); font-size: 12px; background: var(--mark); color: #13203B; border-radius: 6px; padding: 3px 8px; }
+.kind { color: var(--muted); }
+.check { list-style: none; padding: 0; }
+.check li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+.check li::before { content: ""; width: 16px; height: 16px; border: 2px solid var(--muted); border-radius: 4px; margin-top: 5px; }
+
+.foot-note { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 8px; max-width: 70ch; }
+@media (max-width: 520px) { .p4 { grid-template-columns: 1fr; } .block, .qcard { padding: 16px; } }
+@media (prefers-reduced-motion: reduce) { .card, .meter > i { transition: none; } }
+
+/* ---- Boond site wrapper (header, back link, footer). Every class is prefixed bn- so nothing above is touched. ---- */
+body { margin: 0; padding-block: 0; }
+.wrap { padding-block: 24px 48px; }
+.bn-header { position: sticky; top: 0; z-index: 50; height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  background: #FFD23F; border-bottom: 3px solid #3A2A16;
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.bn-wordmark { display: inline-flex; align-items: flex-end; gap: 1px; text-decoration: none; font: 700 1.75rem/1 'Fredoka', sans-serif; color: #FFF2D6;
+  -webkit-text-stroke: 2px #3A2A16; paint-order: stroke fill; text-shadow: 2px 2px 0 #3A2A16; }
+.bn-wordmark svg { display: block; width: .52em; height: .62em; margin-bottom: .04em; filter: drop-shadow(2px 2px 0 #3A2A16); }
+.bn-actions { display: flex; align-items: center; gap: 8px; }
+.bn-btn { font: 800 1rem/1 'Nunito', sans-serif; color: #3A2A16; background: #FF4F7E; border: 3px solid #3A2A16; border-radius: 999px; padding: 10px 17px; box-shadow: 4px 4px 0 #3A2A16; text-decoration: none; display: inline-block; }
+.bn-btn--learn { background: #FFF8E8; font-size: .85rem; padding: 7px 11px; box-shadow: 3px 3px 0 #3A2A16; }
+.bn-back { justify-self: start; font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 3px solid var(--accent); }
+.bn-footer { background: #3A2A16; color: #FFF2D6; padding-top: 36px; padding-bottom: 36px;
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.bn-footer-in { max-width: 760px; margin: 0 auto; }
+.bn-footer .bn-wordmark { -webkit-text-stroke: 2px #000; text-shadow: 2px 2px 0 #000; font-size: 2.1rem; }
+.bn-footer p { margin: 14px 0 0; color: #E8D7B5; max-width: none; }
+.bn-footer a { color: #FFF2D6; }
+.bn-links { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 18px; font-weight: 700; }
+@media (max-width: 360px) { .bn-wordmark { font-size: 1.6rem; } .bn-btn { padding: 9px 14px; } .bn-btn--learn { padding: 7px 11px; } }
+</style>
+
+</head>
+<body>
+
+<header class="bn-header">
+  <a class="bn-wordmark" href="/" aria-label="Boond, home"><span aria-hidden="true">b</span><svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#FFF2D6" stroke="#3A2A16" stroke-width="2.4"/></svg><svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#14B5B0" stroke="#3A2A16" stroke-width="2.4"/></svg><span aria-hidden="true">nd</span></a>
+  <nav class="bn-actions" aria-label="Site">
+    <a class="bn-btn bn-btn--learn" href="../../">Learn</a>
+    <a class="bn-btn" href="/#join">Join</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <a class="bn-back" href="../">&larr; All modules</a>
+  <header class="top">
+    <div class="series">Marketing in Public</div>
+    <h1>Module 1: Why Marketing Matters</h1>
+    <p class="sub">Study notes, flashcards, practice questions and a practice tool, built from the free OpenStax <em>Principles of Marketing</em> textbook. Page numbers are the printed page numbers in the OpenStax PDF, so you can check anything yourself.</p>
+  </header>
+
+  <nav class="roadmap" id="roadmap" aria-label="Course roadmap"></nav>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="learn">Learn</button>
+    <button class="tab" role="tab" data-tab="cards">Flashcards</button>
+    <button class="tab" role="tab" data-tab="quiz">Quiz</button>
+    <button class="tab" role="tab" data-tab="apply">Apply it</button>
+  </div>
+
+  <section class="panel" id="p-learn" role="tabpanel"></section>
+  <section class="panel" id="p-cards" role="tabpanel" hidden></section>
+  <section class="panel" id="p-quiz" role="tabpanel" hidden></section>
+  <section class="panel" id="p-apply" role="tabpanel" hidden></section>
+
+  <footer class="foot-note">
+    <p id="donate-wrap" hidden>Free to use. If it helped, <a id="donate-link" href="#" rel="noopener">you can chip in a little</a>.</p>
+    <p>Adapted from <em>Principles of Marketing</em> by Maria Gomez Albrecht, Mark Green and Linda Hoffman, OpenStax, Rice University, 2023, licensed CC BY 4.0. Access for free at openstax.org (openstax.org/details/books/principles-marketing). Changes: the content is summarized in our own words, and the cards, questions and examples are new.</p>
+    <p>Unofficial study notes. Not endorsed by OpenStax or Rice University, and not affiliated with any course provider.</p>
+  </footer>
+</div>
+
+<footer class="bn-footer">
+  <div class="bn-footer-in">
+    <a class="bn-wordmark" href="/" aria-label="Boond, home"><span aria-hidden="true">b</span><svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#FFF2D6" stroke="#000" stroke-width="2.4"/></svg><svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#14B5B0" stroke="#000" stroke-width="2.4"/></svg><span aria-hidden="true">nd</span></a>
+    <p>salted sweet, by the drop · hydration with fiber</p>
+    <p>Not for sale yet.</p>
+    <div class="bn-links">
+      <a href="mailto:hello@boondsips.com">hello@boondsips.com</a>
+      <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">@boondsips</a>
+      <a href="/#join">Join the waitlist</a>
+      <a href="../../">Learn</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../../config.js"></script>
+<script>
+(function () {
+  var LEARN = [
+    { t: 'What marketing actually is', p: 'p. 12–13', h:
+      '<p>Ask people what marketing is and most say <mark>advertising</mark> or <mark>selling</mark>. Both are pieces of it. The American Marketing Association frames marketing as creating, communicating, delivering and exchanging offerings that have value for customers, clients, partners and society.</p>' +
+      '<p>In plain words: <mark>find out what customers need, see where those needs are heading, meet them, and make a profit doing it.</mark> Profit here means customers pay more than it costs you to make the product, so adding value is the route to it.</p>' },
+    { t: 'Who marketing helps', p: 'p. 13–15', h:
+      '<p>Every company has <mark>interested parties</mark>, which the book also calls stakeholders. Internal ones are employees, owners, managers and investors. External ones are customers, creditors, suppliers, distributors and society. Marketing even points inward: <mark>internal marketing</mark> promotes the company\'s goals to its own employees.</p>' +
+      '<p>For customers, marketing creates four kinds of <mark>utility</mark>, which just means usefulness:</p>' +
+      '<ul><li><b>Form:</b> turning ingredients or parts into the finished thing you actually want.</li><li><b>Time:</b> having it available when you want it.</li><li><b>Place:</b> having it where you are.</li><li><b>Possession:</b> making it easy to own, for example through financing, plus the pride of owning it.</li></ul>' +
+      '<p>For society, the book\'s argument is that marketing drives the consumer economy: sales support jobs, suppliers and tax revenue.</p>' },
+    { t: 'The five-step marketing process', p: 'p. 15–17', h:
+      '<p>Other sources use 4, 6 or 10 steps. This book uses five, and the order matters:</p>' +
+      '<ol class="steps">' +
+      '<li><span><b>Understand the marketplace and customers.</b> Who they are, what they can spend, what they want.</span></li>' +
+      '<li><span><b>Build a customer-driven strategy.</b> Start from customer needs, then write a <mark>value proposition</mark>.</span></li>' +
+      '<li><span><b>Deliver high customer value.</b> Give people more benefit than cost.</span></li>' +
+      '<li><span><b>Grow profitable customer relationships.</b> Winning a customer is one of the most expensive parts of marketing, so repeat buyers matter.</span></li>' +
+      '<li><span><b>Capture value as profit.</b> Loyal customers raise <mark>customer equity</mark>, the potential profit from current and future customers.</span></li>' +
+      '</ol>' },
+    { t: 'Value, in one ratio', p: 'p. 16, 32', h:
+      '<p><mark>Customer value</mark> is the perceived benefits compared with the costs the customer takes on. Raise the benefits or lower the cost and value goes up. Costs are not only money: the book counts the time it takes to go and get the product, too.</p>' +
+      '<p>The book splits value into four kinds:</p>' +
+      '<ul><li><b>Functional:</b> what the product does for you.</li><li><b>Monetary:</b> what it costs against what it seems worth.</li><li><b>Social:</b> how it helps you connect with others.</li><li><b>Psychological:</b> how it makes you feel.</li></ul>' },
+    { t: 'The 4 Ps', p: 'p. 18–21', h:
+      '<ul><li><b>Product:</b> the good or service, shaped by what customers want.</li>' +
+      '<li><b>Price:</b> what customers pay. It sits between the lowest price that still makes a profit and the highest price that doesn\'t lose customers.</li>' +
+      '<li><b>Promotion:</b> advertising, PR, social media, trade shows and anything else that builds awareness and gives people reasons to buy.</li>' +
+      '<li><b>Place:</b> how and where the product reaches customers. It is about <mark>where customers are</mark>, not where the company is located.</li></ul>' +
+      '<p>The book walks through all four using a backpack.</p>' },
+    { t: 'The marketing environment', p: 'p. 22–26', h:
+      '<p>A company\'s marketing choices are shaped by forces it controls and forces it doesn\'t.</p>' +
+      '<ul><li><b>Inside, the 5 Ms:</b> minds, minutes, machinery, materials and money, plus organizational culture, "the way we do things around here." The book warns that marketing which doesn\'t match the real culture rings hollow.</li>' +
+      '<li><b>Close outside, the microenvironment:</b> suppliers, market intermediaries such as retailers and wholesalers, customers, competitors and the general public.</li>' +
+      '<li><b>Wide outside, the macroenvironment:</b> checked with <mark>PESTLE</mark>: political, economic, social, technological, legal and environmental factors.</li></ul>' +
+      '<p>PESTLE is how this book spots trends. Run it on any brand and ask which factor is changing fastest.</p>' },
+    { t: 'How marketing thinking evolved', p: 'p. 27–29', h:
+      '<ol class="steps">' +
+      '<li><span><b>Production</b> (after the Civil War to the 1920s). Goods were scarce and people wanted them cheap, so firms focused on making lots. "If you build it, they will come."</span></li>' +
+      '<li><span><b>Product</b> (1920s to 1950s). Customers favored quality and features. The risk is <mark>marketing myopia</mark>: falling in love with your product. The book\'s example is the railroads, which thought they were in the railroad business, not the transportation business.</span></li>' +
+      '<li><span><b>Sales</b> (by the 1950s). Supply was plentiful and competition high, so firms tried to persuade people to buy what they had made.</span></li>' +
+      '<li><span><b>Marketing.</b> Start with customer needs, then make the product. This is where relationship marketing begins.</span></li>' +
+      '<li><span><b>Societal.</b> Also weigh society\'s long-term interests and the environmental impact of your choices.</span></li>' +
+      '</ol>' },
+    { t: 'Needs, wants and the exchange', p: 'p. 30–32', h:
+      '<p>The book names <mark>five types of customer needs</mark>, using a phone purchase as the example:</p>' +
+      '<ul><li><b>Stated:</b> what the customer says out loud.</li><li><b>Real:</b> what that actually means, such as battery life or camera quality.</li><li><b>Unstated:</b> expected but never asked for, such as good service.</li><li><b>Delight:</b> the "wow" extra.</li><li><b>Secret:</b> a motive the customer may not admit or even notice, such as status.</li></ul>' +
+      '<p>Answering only the stated need may leave the customer unsatisfied.</p>' +
+      '<p>A <mark>value proposition</mark> is a short promise of the benefits a customer gets and why they beat the alternatives. In the <mark>exchange process</mark> a buyer with a need trades something of value with a seller for a desired product, service or experience. The <b>customer</b> is who buys. The <b>consumer</b> is who uses it. They can be different people.</p>' +
+      '<p class="note">On whether marketing creates needs: the book\'s answer is that it opens people\'s eyes to wants, and it acknowledges that some people see it the other way.</p>' },
+    { t: 'Also in Chapter 1: CRM and ethics', p: 'p. 33–36', h:
+      '<p><mark>Customer relationship management (CRM)</mark> is how companies track, manage and analyze customer interactions. The book says it is typically easier and cheaper to keep a loyal customer than to win a new one. <b>Loyalty</b> is an ongoing positive relationship. <b>Retention</b> is turning new customers into returning ones. CRM software comes in three flavors: operational (automates marketing, sales and service), analytical (digs into the data) and collaborative (shares customer data between businesses).</p>' +
+      '<p><mark>Ethical marketing</mark> is about fairness, honesty and responsibility. The dos: be transparent, respect data privacy, answer customer concerns promptly. The don\'ts: exaggerate (puffery), make false or unverified claims, and make false comparisons. You will see both topics again in later modules.</p>' }
+  ];
+
+  var CARDS = [
+    { q: 'What is marketing, in plain words?', a: 'Identifying customer needs, anticipating where they are heading, and satisfying them profitably.', p: 'p. 12–13' },
+    { q: 'Name the four utilities marketing creates.', a: '<ul><li>Form</li><li>Time</li><li>Place</li><li>Possession</li></ul>', p: 'p. 14–15' },
+    { q: 'List the five steps of the marketing process.', a: '<ul><li>Understand marketplace and customers</li><li>Build a customer-driven strategy</li><li>Deliver high customer value</li><li>Grow profitable customer relationships</li><li>Capture value as profit</li></ul>', p: 'p. 15–17' },
+    { q: 'What is customer equity?', a: 'The potential profit a company earns from its current and potential customers. Higher loyalty means higher customer equity.', p: 'p. 17' },
+    { q: 'What is customer value?', a: 'The perceived benefits compared with the costs the customer takes on, including time as well as money.', p: 'p. 16, 32' },
+    { q: 'What are the four types of value?', a: '<ul><li>Functional</li><li>Monetary</li><li>Social</li><li>Psychological</li></ul>', p: 'p. 16' },
+    { q: 'What are the 4 Ps, and what does Place really mean?', a: 'Product, Price, Promotion, Place. Place is about where your customers are and how to get the product to them, not where your company sits.', p: 'p. 18–20' },
+    { q: 'What are the 5 Ms of the internal environment?', a: 'Minds, minutes, machinery, materials, money. Organizational culture sits alongside them.', p: 'p. 23' },
+    { q: 'What does PESTLE stand for?', a: 'Political, Economic, Social, Technological, Legal, Environmental. It is a tool for scanning the macroenvironment.', p: 'p. 25–26' },
+    { q: 'Put the five marketing eras in order.', a: 'Production, product, sales, marketing, societal.', p: 'p. 27–29' },
+    { q: 'What is marketing myopia?', a: 'Falling in love with your product and missing what the market needs. The railroads thought they sold trains, not transportation.', p: 'p. 28' },
+    { q: 'What are the five types of customer needs?', a: '<ul><li>Stated</li><li>Real</li><li>Unstated</li><li>Delight</li><li>Secret</li></ul>', p: 'p. 30' },
+    { q: 'Customer versus consumer?', a: 'The customer is who buys. The consumer is who uses. A parent buying a toy is the customer. The child is the consumer.', p: 'p. 31' },
+    { q: 'What is a value proposition?', a: 'A short promise of the benefits customers get and why those benefits beat the alternatives.', p: 'p. 31' },
+    { q: 'Name three ethical marketing don\'ts.', a: '<ul><li>Don\'t exaggerate (puffery)</li><li>Don\'t make false or unverified claims</li><li>Don\'t make false comparisons</li></ul>', p: 'p. 36' }
+  ];
+
+  var QUIZ = [
+    { q: 'A coffee shop opens at 5:30 a.m. so commuters can buy before their train. Which utility is that?',
+      o: ['Form utility', 'Time utility', 'Place utility', 'Possession utility'], c: 1,
+      e: 'Time utility means the product is available when it is most convenient for the customer.', p: 'p. 14' },
+    { q: 'A parent buys a juice box for their child. Who is the customer and who is the consumer?',
+      o: ['Customer: the child. Consumer: the parent.', 'Both are customers.', 'Customer: the parent. Consumer: the child.', 'Both are consumers.'], c: 2,
+      e: 'The customer is the one who purchases. The consumer is the one who uses the product.', p: 'p. 31' },
+    { q: 'A brand decides which grocery stores and websites will sell its product. Which P is that?',
+      o: ['Place', 'Product', 'Promotion', 'Price'], c: 0,
+      e: 'Place covers how and where the product reaches the customers most likely to buy it.', p: 'p. 18–20' },
+    { q: 'A snack brand adds a resealable bag and keeps the price the same. What happens to customer value?',
+      o: ['It goes down, because the product changed.', 'It stays the same, because only price matters.', 'It cannot be measured.', 'It goes up, because perceived benefits rose while cost stayed put.'], c: 3,
+      e: 'Customer value compares perceived benefits with costs. More benefit at the same cost raises it.', p: 'p. 16' },
+    { q: 'A company builds a gadget because its engineers love it, and never asks shoppers what they want. Which orientation is this, and what is the risk?',
+      o: ['Production concept, building too cheaply', 'Product concept, marketing myopia', 'Sales concept, pushing too hard', 'Societal concept, overspending'], c: 1,
+      e: 'The product concept focuses on making a superior product. The danger is falling in love with it and missing what the market needs.', p: 'p. 28' },
+    { q: 'A shopper asks for "a healthy drink." You ask what healthy means to them: less sugar, more fiber, something else. Which type of need are you uncovering?',
+      o: ['Stated need', 'Delight need', 'Real need', 'Secret need'], c: 2,
+      e: 'The stated need is the sentence the customer says. The real need is what that sentence actually means.', p: 'p. 30' },
+    { q: 'Which line works best as a value proposition?',
+      o: ['"We have 30 years of combined experience."', '"We are the best company in our industry."', '"Our office is in downtown Boston."', '"Get a finished tax return in 15 minutes, with no forms to hunt down."'], c: 3,
+      e: 'A value proposition promises a specific benefit to the customer. The other lines talk about the company, not the customer.', p: 'p. 31' },
+    { q: 'A new law changes what a drink label is allowed to claim. Which PESTLE factor is that?',
+      o: ['Legal', 'Social', 'Technological', 'Economic'], c: 0,
+      e: 'Legal factors include legislation and industry regulation.', p: 'p. 26' },
+    { q: 'An ad calls a product "doctor-recommended" but cannot show any evidence. Which ethical marketing don\'t does it break?',
+      o: ['Don\'t overemphasize with puffery', 'Don\'t make false comparisons', 'Don\'t make false or unverified claims', 'Don\'t ignore data privacy'], c: 2,
+      e: 'Claims have to be true and checkable. An unverified "doctor-recommended" claim is the book\'s own example of what not to do.', p: 'p. 36' }
+  ];
+
+  var TRACKS = {
+    mine: { name: 'Your brand', kind: 'Anything you are building', who: 'Who buys it and who uses it? They may be different people.',
+      vp: 'Finish this in one sentence: for [customer], [brand] is the [category] that [benefit], unlike [alternative].',
+      place: 'Where does someone first meet it: a shelf, a search result, a friend, an app store?',
+      need: 'Someone asks for what they want. What do they say, what do they mean, and what might they not admit?',
+      env: 'Name one competitor or substitute, and one PESTLE factor that could change things for you.',
+      claim: 'Which claim about your brand would you need proof for before saying it publicly?', start: {} },
+    foundeez: { name: 'Foundeez', kind: 'App and community', who: 'Who buys and who uses it? Founders, investors, sponsors, or all of them?',
+      vp: 'What do early-stage founders get here that they cannot get from a group chat or a social feed?',
+      place: 'Where do founders already spend time, and how do they find you?',
+      need: 'What would a founder say they want, and what might they really want?',
+      env: 'Name one competitor or substitute, and one PESTLE factor that could change things.',
+      claim: 'What claim about results or community size would you need proof for before saying it publicly?', start: {} },
+    datasnake: { name: 'DataSnake', kind: 'Hardware and deep tech', who: 'The buyer, the person who deploys it, and the person who uses the data can be three different people. Who are they?',
+      vp: 'What does a customer get from modular sensors across ground, surface water and underwater that they cannot get today?',
+      place: 'Does a sensor reach customers through direct sales, partners, distributors or tenders?',
+      need: 'What does a customer say they want, and what are they really trying to avoid or prove?',
+      env: 'Name one competitor or substitute, and one PESTLE factor (regulation and funding often matter here).',
+      claim: 'Which performance claim would you need test data for before saying it publicly?', start: {} },
+    boond: { name: 'Boond', kind: 'Physical consumer product', who: 'Who buys it and who drinks it? They may not be the same person.',
+      vp: 'Finish this in one sentence: for [customer], Boond is the [category] that [benefit], unlike [alternative].',
+      place: 'Where will someone first meet it: a shelf, a checkout page, a friend\'s kitchen?',
+      need: 'Someone asks for a "better hydration drink." What do they say, what do they mean, and what might they not admit?',
+      env: 'Name one competitor or substitute, and one PESTLE factor (label rules and ingredient costs often matter here).',
+      claim: 'Hydration and fiber are claims people check. What would you need to show before saying them out loud?',
+      start: {} }
+  };
+
+  var ROADMAP = [
+    ['1 Why marketing matters', 'live'], ['2 Strategic planning'], ['3 Product development'], ['4 Segmentation, targeting, positioning'],
+    ['5 Promotion'], ['6 Personal selling'], ['7 Pricing'], ['8 Retailing'], ['9 Digital and social'], ['10 Branding'],
+    ['11 CRM'], ['12 Social responsibility'],
+    ['Bonus: Consumer behavior', 'bonus'], ['Bonus: B2B', 'bonus'], ['Bonus: Research', 'bonus'], ['Bonus: Diverse marketplace', 'bonus'], ['Bonus: Services', 'bonus'], ['Bonus: Distribution', 'bonus']
+  ];
+
+  function $(id) { return document.getElementById(id); }
+  function store(get, key, val) {
+    try { if (get) return window.localStorage.getItem(key); window.localStorage.setItem(key, val); } catch (e) {}
+    return null;
+  }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  /* roadmap */
+  $('roadmap').innerHTML = ROADMAP.map(function (r) {
+    return '<span class="chip ' + (r[1] || '') + '"' + (r[1] === 'live' ? ' aria-current="true"' : '') + '>' + esc(r[0]) + '</span>';
+  }).join('');
+
+  /* learn */
+  $('p-learn').innerHTML = LEARN.map(function (b) {
+    return '<article class="block"><h2>' + esc(b.t) + ' <span class="pg">' + esc(b.p) + '</span></h2>' + b.h + '</article>';
+  }).join('');
+
+  /* flashcards */
+  var known = {};
+  try { known = JSON.parse(store(true, 'mip-m1-known') || '{}') || {}; } catch (e) { known = {}; }
+  var order = CARDS.map(function (_, i) { return i; });
+  var pos = 0, flipped = false;
+  var pc = $('p-cards');
+  pc.innerHTML =
+    '<div class="deckbar"><span class="mono" id="cnt"></span><span class="mono" id="kn"></span></div>' +
+    '<div class="meter" aria-hidden="true"><i id="bar"></i></div>' +
+    '<div class="scene"><button class="card" id="card" type="button" aria-label="Flashcard. Press to flip.">' +
+    '<div class="face front" id="front"></div><div class="face back" id="back" aria-hidden="true"></div></button></div>' +
+    '<div class="row"><button class="btn" id="prev" type="button">Previous</button><button class="btn primary" id="flip" type="button">Flip</button><button class="btn" id="next" type="button">Next</button>' +
+    '<button class="btn known" id="gotit" type="button" aria-pressed="false">Got it</button><button class="btn" id="shuf" type="button">Shuffle</button></div>' +
+    '<p class="note">Tip: Space flips the card and the arrow keys move between cards. Your "Got it" marks are saved in this browser only.</p>';
+
+  function renderCard() {
+    var i = order[pos], c = CARDS[i];
+    $('front').innerHTML = '<div class="tag mono">QUESTION</div><div class="q">' + esc(c.q) + '</div><div class="foot mono"><span>Module 1</span><span>' + esc(c.p) + '</span></div>';
+    $('back').innerHTML = '<div class="tag mono">ANSWER</div><div class="a">' + c.a + '</div><div class="foot mono"><span>OpenStax Ch. 1</span><span>' + esc(c.p) + '</span></div>';
+    $('card').classList.toggle('flipped', flipped);
+    $('front').setAttribute('aria-hidden', flipped ? 'true' : 'false');
+    $('back').setAttribute('aria-hidden', flipped ? 'false' : 'true');
+    $('cnt').textContent = 'Card ' + (pos + 1) + ' of ' + CARDS.length;
+    var n = Object.keys(known).filter(function (k) { return known[k]; }).length;
+    $('kn').textContent = 'Got it: ' + n + ' of ' + CARDS.length;
+    $('bar').style.width = (n / CARDS.length * 100) + '%';
+    var g = $('gotit'); g.setAttribute('aria-pressed', known[i] ? 'true' : 'false');
+    g.textContent = known[i] ? 'Got it ✓' : 'Got it';
+  }
+  function go(d) { pos = (pos + d + CARDS.length) % CARDS.length; flipped = false; renderCard(); }
+  $('card').addEventListener('click', function () { flipped = !flipped; renderCard(); });
+  $('flip').addEventListener('click', function () { flipped = !flipped; renderCard(); });
+  $('prev').addEventListener('click', function () { go(-1); });
+  $('next').addEventListener('click', function () { go(1); });
+  $('gotit').addEventListener('click', function () { var i = order[pos]; known[i] = !known[i]; store(false, 'mip-m1-known', JSON.stringify(known)); renderCard(); });
+  $('shuf').addEventListener('click', function () {
+    for (var i = order.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = order[i]; order[i] = order[j]; order[j] = t; }
+    pos = 0; flipped = false; renderCard();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (currentTab !== 'cards') return;
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+    if (e.key === 'ArrowRight') { go(1); }
+    else if (e.key === 'ArrowLeft') { go(-1); }
+    else if (e.key === ' ' && document.activeElement !== $('card') && tag !== 'BUTTON') { e.preventDefault(); flipped = !flipped; renderCard(); }
+  });
+
+  /* quiz */
+  var qi = 0, score = 0, missed = [], answered = false;
+  var pq = $('p-quiz');
+  function renderQuiz() {
+    if (qi >= QUIZ.length) {
+      var best = parseInt(store(true, 'mip-m1-best') || '0', 10) || 0;
+      if (score > best) { best = score; store(false, 'mip-m1-best', String(best)); }
+      pq.innerHTML = '<div class="qcard"><div class="mono">RESULT</div><div class="score">' + score + ' / ' + QUIZ.length + '</div>' +
+        '<p>Best on this device: ' + best + ' / ' + QUIZ.length + '</p>' +
+        (missed.length ? '<div><b>Review these:</b><ul class="missed">' + missed.map(function (m) { return '<li>' + esc(QUIZ[m].q) + ' <span class="pg">' + esc(QUIZ[m].p) + '</span></li>'; }).join('') + '</ul></div>' : '<p>Clean sweep. Try the flashcards in shuffle mode next.</p>') +
+        '<div class="row">' + (missed.length ? '<button class="btn primary" id="retrym" type="button">Retry missed</button>' : '') + '<button class="btn" id="again" type="button">Start over</button></div></div>';
+      var rm = $('retrym'); if (rm) rm.addEventListener('click', function () { var list = missed.slice(); startQuiz(list); });
+      $('again').addEventListener('click', function () { startQuiz(null); });
+      return;
+    }
+    var q = QUIZ[queue[qi]];
+    pq.innerHTML = '<div class="deckbar"><span class="mono">Question ' + (qi + 1) + ' of ' + queue.length + '</span><span class="mono">Score ' + score + '</span></div>' +
+      '<div class="meter" aria-hidden="true"><i style="width:' + (qi / queue.length * 100) + '%"></i></div>' +
+      '<div class="qcard"><h2>' + esc(q.q) + '</h2><div class="opts" id="opts">' +
+      q.o.map(function (t, k) { return '<button class="opt" type="button" data-k="' + k + '"><span class="k">' + 'ABCD'[k] + '</span><span>' + esc(t) + '</span></button>'; }).join('') +
+      '</div><div id="fb" aria-live="polite"></div><div class="row"><button class="btn primary" id="nq" type="button" hidden>Next</button></div></div>';
+    answered = false;
+    Array.prototype.forEach.call(pq.querySelectorAll('.opt'), function (b) {
+      b.addEventListener('click', function () {
+        if (answered) return; answered = true;
+        var k = parseInt(b.getAttribute('data-k'), 10), ok = k === q.c;
+        if (ok) score++; else if (missed.indexOf(queue[qi]) < 0) missed.push(queue[qi]);
+        Array.prototype.forEach.call(pq.querySelectorAll('.opt'), function (o, n) {
+          o.disabled = true;
+          if (n === q.c) o.classList.add('right'); else if (n === k) o.classList.add('wrong');
+        });
+        $('fb').innerHTML = '<div class="fb"><b class="' + (ok ? 'ok' : 'no') + '">' + (ok ? 'Correct.' : 'Not quite.') + '</b> ' + esc(q.e) + ' <span class="pg">' + esc(q.p) + '</span></div>';
+        var nq = $('nq'); nq.hidden = false; nq.textContent = (qi + 1 >= queue.length) ? 'See result' : 'Next'; nq.focus();
+      });
+    });
+    $('nq').addEventListener('click', function () { qi++; renderQuiz(); });
+  }
+  var queue = QUIZ.map(function (_, i) { return i; });
+  function startQuiz(list) {
+    queue = list && list.length ? list.slice() : QUIZ.map(function (_, i) { return i; });
+    qi = 0; score = 0; missed = []; renderQuiz();
+  }
+
+  /* apply */
+  var curTrack = 'mine';
+  var saved = {};
+  try { saved = JSON.parse(store(true, 'mip-m1-apply') || '{}') || {}; } catch (e) { saved = {}; }
+  var pa = $('p-apply');
+  var FIELDS = [
+    ['who', 'Customer or consumer?', 'who', 'text'],
+    ['vp', 'Your value proposition', 'vp', 'area'],
+    ['p4', 'The 4 Ps in one line each', null, 'p4'],
+    ['need', 'Stated, real and secret needs', 'need', 'area'],
+    ['env', 'Competitor and PESTLE check', 'env', 'area'],
+    ['claim', 'A claim you would need proof for', 'claim', 'area']
+  ];
+  pa.innerHTML =
+    '<div class="block"><h2>Same ideas, different shapes</h2><p>Start with Your brand, or look at a worked example. The questions are the same for each one. The answers will look very different for an app, a piece of hardware and a drink, and that contrast is the lesson.</p></div>' +
+    '<div class="tablewrap"><table><thead><tr><th></th><th>App or community</th><th>Hardware and deep tech</th><th>Physical consumer product</th></tr></thead><tbody>' +
+    '<tr><td>Product</td><td>What does the user actually get: features, people, results?</td><td>What does the sensor measure, and who trusts the data?</td><td>What is in the pack, and what does it taste and feel like?</td></tr>' +
+    '<tr><td>Price</td><td>Free, subscription, or paid tiers?</td><td>Unit price, service contract, or data plan?</td><td>Price per pack against the alternatives on the shelf.</td></tr>' +
+    '<tr><td>Place</td><td>App store, website, communities where users already are.</td><td>Direct sales, partners, distributors, tenders.</td><td>Your own site, retailers, marketplaces.</td></tr>' +
+    '<tr><td>Promotion</td><td>Content, referrals, community events.</td><td>Case studies, conferences, technical credibility.</td><td>Social content, samples, reviews.</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="tracks" id="tracks"></div><div id="form" style="display:grid;gap:12px"></div>' +
+    '<div class="row"><button class="btn primary" id="copyans" type="button">Copy my answers</button></div>' +
+    '<div id="copyout" hidden><p class="note" id="copymsg"></p><textarea class="out" id="copyta" readonly></textarea></div>' +
+    '<p class="note">Answers save in this browser only. Nothing is sent anywhere.</p>';
+
+  function trackBtns() {
+    $('tracks').innerHTML = Object.keys(TRACKS).map(function (k) {
+      var t = TRACKS[k];
+      return '<button class="track" type="button" data-t="' + k + '" aria-pressed="' + (k === curTrack ? 'true' : 'false') + '">' + esc(t.name) + '<small>' + esc(t.kind) + '</small></button>';
+    }).join('');
+    Array.prototype.forEach.call($('tracks').querySelectorAll('.track'), function (b) {
+      b.addEventListener('click', function () { curTrack = b.getAttribute('data-t'); trackBtns(); renderForm(); });
+    });
+  }
+  function val(tk, f) { var s = saved[tk] && saved[tk][f]; if (s != null) return s; return (TRACKS[tk].start && TRACKS[tk].start[f]) || ''; }
+  function renderForm() {
+    var t = TRACKS[curTrack], html = '';
+    FIELDS.forEach(function (f) {
+      var id = 'f-' + f[0];
+      if (f[3] === 'p4') {
+        html += '<div class="field"><label>' + f[1] + '</label><div class="hint">' + esc(t.place) + '</div><div class="p4">' +
+          ['product', 'price', 'promotion', 'place'].map(function (k) { return '<div><label for="f-' + k + '">' + k.charAt(0).toUpperCase() + k.slice(1) + '</label><input type="text" id="f-' + k + '" data-f="' + k + '"></div>'; }).join('') + '</div></div>';
+      } else {
+        html += '<div class="field"><label for="' + id + '">' + f[1] + '</label><div class="hint">' + esc(t[f[2]]) + '</div>' +
+          (f[3] === 'text' ? '<input type="text" id="' + id + '" data-f="' + f[0] + '">' : '<textarea id="' + id + '" data-f="' + f[0] + '"></textarea>') + '</div>';
+      }
+    });
+    $('form').innerHTML = html;
+    Array.prototype.forEach.call($('form').querySelectorAll('[data-f]'), function (el) {
+      var f = el.getAttribute('data-f');
+      el.value = val(curTrack, f);
+      el.addEventListener('input', function () {
+        if (!saved[curTrack]) saved[curTrack] = {};
+        saved[curTrack][f] = el.value;
+        store(false, 'mip-m1-apply', JSON.stringify(saved));
+      });
+    });
+  }
+  $('copyans').addEventListener('click', function () {
+    var t = TRACKS[curTrack], L = ['Marketing in Public, Module 1: ' + t.name];
+    var names = { who: 'Customer or consumer', vp: 'Value proposition', product: 'Product', price: 'Price', promotion: 'Promotion', place: 'Place', need: 'Needs (stated, real, secret)', env: 'Competitor and PESTLE', claim: 'Claim needing proof' };
+    ['who', 'vp', 'product', 'price', 'promotion', 'place', 'need', 'env', 'claim'].forEach(function (f) { L.push(names[f] + ': ' + (val(curTrack, f) || '(blank)')); });
+    var text = L.join('\n');
+    $('copyout').hidden = false; $('copyta').value = text;
+    function manual(msg) { $('copymsg').textContent = msg; $('copyta').focus(); $('copyta').select(); }
+    try {
+      navigator.clipboard.writeText(text).then(function () { $('copymsg').textContent = 'Copied. You can paste it into the chat.'; }, function () { manual('Copy was blocked here. Select the text below and copy it.'); });
+    } catch (e) { manual('Copy was blocked here. Select the text below and copy it.'); }
+  });
+  trackBtns(); renderForm();
+
+  /* optional donate link: set window.MIP_CONFIG = { donateUrl: 'https://...' } before this script; hidden when empty */
+  (function () { var u = (window.MIP_CONFIG && window.MIP_CONFIG.donateUrl) || ''; if (/^https:\/\//.test(u)) { $('donate-link').href = u; $('donate-wrap').hidden = false; } })();
+
+  /* tabs and hash routing */
+  var TABS = ['learn', 'cards', 'quiz', 'apply'], currentTab = 'learn';
+  function show(name) {
+    if (TABS.indexOf(name) < 0) name = 'learn';
+    currentTab = name;
+    TABS.forEach(function (t) { $('p-' + t).hidden = t !== name; });
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === name ? 'true' : 'false'); });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) {
+    b.addEventListener('click', function () { var n = b.getAttribute('data-tab'); show(n); try { history.replaceState(null, '', '#' + n); } catch (e) { location.hash = n; } });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.replace('#', '')); });
+
+  renderCard(); startQuiz(null);
+  show(location.hash.replace('#', ''));
+})();
+</script>
+</body>
+</html>

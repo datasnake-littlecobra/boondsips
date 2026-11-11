@@ -2,8 +2,7 @@
 // To publish a module: put its page at ./module-N/index.html and change that module's status to "live".
 // url is relative to this page (/learn/marketing/). Descriptions are optional.
 window.LEARN_ITEMS = [
-  // TODO: change Module 1 to "live" in the same change that adds ./module-1/index.html.
-  { number: 1,  title: "Why marketing matters",                       description: "The big picture: what marketing is and why it matters.", status: "coming soon", url: "module-1/" },
+  { number: 1,  title: "Why marketing matters",                       description: "What marketing is, who it helps, the five-step process and the 4 Ps, with flashcards, a quiz and a practice tool.", status: "live", url: "module-1/" },
   { number: 2,  title: "Strategic planning",                          description: "", status: "coming soon", url: "module-2/" },
   { number: 3,  title: "Product development",                         description: "", status: "coming soon", url: "module-3/" },
   { number: 4,  title: "Segmentation, targeting and positioning",     description: "", status: "coming soon", url: "module-4/" },
