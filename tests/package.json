@@ -1,0 +1,12 @@
+{
+  "name": "boondsips-tests",
+  "private": true,
+  "type": "module",
+  "description": "Smoke tests for the static site. Kept in tests/ so the site deploy never installs anything.",
+  "scripts": {
+    "test": "node smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
