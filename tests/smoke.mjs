@@ -57,6 +57,17 @@ const open = async (page, url) => { const r = await page.goto(BASE + url); await
   const [lbg, jbg] = await Promise.all([learn.evaluate((e) => getComputedStyle(e).backgroundColor), join.evaluate((e) => getComputedStyle(e).backgroundColor)]);
   check(lbg !== jbg, "Learn and Join have different accent colors", `${lbg} vs ${jbg}`);
   check(await page.locator(".foot-links a[href='learn/']").count() === 1, "footer has a Learn link");
+  // Instagram: easy to find (menu, under the hero form, under the join form, footer), all opening safely in a new tab
+  const IG = "https://www.instagram.com/boondsips/";
+  const igLinks = page.locator(`a[href='${IG}']`);
+  check((await igLinks.count()) === 4, "Instagram link appears four times (menu, hero, join, footer)", String(await igLinks.count()));
+  const igAttrs = await igLinks.evaluateAll((els) => els.map((e) => e.target === "_blank" && /noopener/.test(e.rel)));
+  check(igAttrs.every(Boolean), "every Instagram link opens in a new tab with rel=noopener");
+  check(await page.locator(".follow--hero a").isVisible(), "hero 'Follow @boondsips on Instagram' is visible at 390px");
+  await page.click("#burger");
+  check(await page.locator(`.menu nav a[href='${IG}']`).isVisible(), "menu shows an Instagram link");
+  await page.click("#menuClose");
+
   for (const w of [360, 390, 430]) {
     await page.setViewportSize({ width: w, height: 844 });
     check(await noSideScroll(page), `home: no sideways scroll at ${w}px`);
