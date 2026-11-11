@@ -1,0 +1,81 @@
+/* Shared styles for the Learn section (hub, course indexes, module wrappers).
+   Brand tokens match the main page. */
+:root{
+  --cream:#FFF2D6; --brown:#3A2A16; --orange:#FF8A1F; --teal:#14B5B0; --pink:#FF7DA0; --green:#3FBF7A;
+  --lemon:#FFD23F; --cta:#FF4F7E;
+  --bg:var(--cream); --surface:#FFF8E8; --ink:var(--brown); --muted:#6B5640; --line:var(--brown); --shadow:var(--brown);
+  --header-h:72px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05; --shadow:#0E0A05; color-scheme:dark}
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;font-size:18px;line-height:1.6;overflow-x:hidden}
+a{color:inherit}
+h1,h2,h3{font-family:"Fredoka","Nunito",sans-serif;line-height:1.1;margin:0}
+p{margin:0 0 1em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+/* buttons (same look as the main page) */
+.btn{font:700 1.05rem/1 "Nunito",sans-serif;color:var(--brown);background:var(--cta);border:3px solid var(--brown);border-radius:999px;padding:18px 30px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--brown);text-decoration:none;display:inline-block;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--brown)}
+.btn:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--brown)}
+
+/* header */
+.site-header{position:sticky;top:0;z-index:50;height:var(--header-h);background:var(--lemon);border-bottom:3px solid var(--brown)}
+.site-header .wrap{height:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.wordmark{display:inline-flex;align-items:flex-end;gap:1px;text-decoration:none;font:700 2.1rem/1 "Fredoka",sans-serif;color:var(--cream);
+  -webkit-text-stroke:2px var(--brown);paint-order:stroke fill;text-shadow:2px 2px 0 var(--brown)}
+.wordmark svg{display:block;width:.52em;height:.62em;margin-bottom:.04em;filter:drop-shadow(2px 2px 0 var(--brown))}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.site-header .btn{padding:11px 22px;font-size:1rem;box-shadow:4px 4px 0 var(--brown)}
+.site-header .btn--learn{background:var(--teal);padding:9px 14px;font-size:.92rem;box-shadow:3px 3px 0 var(--brown)}
+.site-header .btn--learn[aria-current="page"]{background:#FFF8E8} /* header is always yellow, so this stays light in dark mode too */
+@media (max-width:400px){
+  .wordmark{font-size:1.75rem}
+  .site-header .wrap{gap:6px}
+  .site-header .btn{padding:10px 17px;font-size:1rem}
+  .site-header .btn--learn{padding:7px 11px;font-size:.85rem}
+}
+@media (max-width:360px){
+  .site-header .wrap{padding:0 14px}
+  .wordmark{font-size:1.6rem}
+  .site-header .btn{padding:9px 14px}
+}
+
+/* page intro */
+.intro{padding:56px 0 24px}
+.back{display:inline-block;margin-bottom:22px;font-weight:800;text-decoration:none;border-bottom:3px solid var(--teal)}
+.eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 18px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.9rem;color:var(--muted)}
+.eyebrow i{flex:none;width:20px;height:20px;border-radius:50%;border:3px solid var(--line);background:var(--teal)}
+.intro h1{font-size:clamp(2.6rem,10vw,4.6rem);font-weight:700;letter-spacing:-.01em;margin-bottom:18px}
+.intro .lede{max-width:640px;font-size:1.15rem}
+
+/* cards (rendered from the data files) */
+.cards{list-style:none;margin:0;padding:12px 0 72px;display:grid;gap:24px;grid-template-columns:1fr}
+@media (min-width:720px){.cards{grid-template-columns:repeat(2,1fr)}}
+.card{display:flex;flex-direction:column;gap:10px;height:100%;padding:24px 22px;border:3px solid var(--line);border-radius:28px;background:var(--surface);color:var(--ink);
+  box-shadow:8px 8px 0 var(--shadow);text-decoration:none}
+a.card{transition:transform .12s,box-shadow .12s}
+a.card:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0 var(--shadow)}
+.card h2{font-size:1.7rem}
+.card p{margin:0;color:var(--muted)}
+.card .num{font:700 1rem/1 "Fredoka",sans-serif;letter-spacing:.12em}
+.card .tag{align-self:flex-start;margin-top:auto;padding:6px 12px;border:3px solid var(--line);border-radius:999px;font-weight:800;font-size:.85rem}
+.card.is-live .tag{background:var(--teal);color:var(--brown)}
+.card.is-soon{border-style:dashed;box-shadow:none}
+.card.is-soon .tag{background:transparent;color:var(--muted)}
+.empty{padding:12px 0 72px;color:var(--muted)}
+
+/* footer */
+.foot{background:var(--brown);color:var(--cream);padding:56px 0 40px}
+.foot .wordmark{-webkit-text-stroke:2px #000;text-shadow:2px 2px 0 #000}
+.foot p{margin:16px 0 0;color:#E8D7B5}
+.foot a{color:var(--cream)}
+.foot .wordmark{color:var(--cream)}
+.foot-links{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:22px;font-weight:700}
+
+@media (prefers-reduced-motion: reduce){.btn,a.card{transition:none}}

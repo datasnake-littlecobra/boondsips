@@ -31,6 +31,31 @@ Static site for **Boond** (salted sweet, by the drop) at boondsips.com.
 - Unsubscribe page: `/unsubscribe/?t=<token>`. Each signup has an unsubscribe token in the database.
 - Redeploy the function with the Supabase dashboard or CLI. It is not deployed by Cloudflare.
 
+## Learn section
+
+- `/learn/` is the hub, `/learn/marketing/` is the course index, and `/learn/marketing/module-N/` are the module pages.
+- The hub and the course index are drawn from one data file each: `public/learn/content.js` and
+  `public/learn/marketing/modules.js`. Adding content never needs a layout edit.
+- Shared files: `public/learn/learn.css`, `public/learn/learn.js`, and `public/learn/config.js`
+  (`donateUrl` is empty by default, which hides the donate link).
+- **Add a module:** put its page at `public/learn/marketing/module-N/index.html`, then change that module's
+  `status` to `"live"` in `modules.js`.
+- No analytics, cookies or third-party scripts. The only outside request is the Google Fonts stylesheet,
+  the same as the main page.
+
+## Tests
+
+```
+cd tests
+npm install
+npx playwright install chromium
+npm test
+```
+
+The test starts its own local server for `public/`, so nothing is deployed. To use a browser you already have,
+set `CHROMIUM_PATH=/path/to/chrome`. The `tests/` folder has its own `package.json` so the site deploy never
+installs anything.
+
 ## Domain and email
 
 - boondsips.com stays registered at Hostinger; its DNS (nameservers) points to Cloudflare.

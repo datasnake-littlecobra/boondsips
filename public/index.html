@@ -71,6 +71,20 @@ p{margin:0 0 1em}
   -webkit-text-stroke:2px var(--brown);paint-order:stroke fill;text-shadow:2px 2px 0 var(--brown)}
 .wordmark svg{width:.52em;height:.62em;margin-bottom:.04em;filter:drop-shadow(2px 2px 0 var(--brown))}
 .site-header .btn{padding:11px 22px;font-size:1rem;box-shadow:4px 4px 0 var(--brown)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.site-header .btn--learn{background:var(--teal);padding:9px 14px;font-size:.92rem;box-shadow:3px 3px 0 var(--brown)}
+@media (max-width:400px){
+  .wordmark{font-size:1.75rem}
+  .site-header .wrap{gap:6px}
+  .site-header .btn{padding:10px 17px;font-size:1rem}
+  .site-header .btn--learn{padding:7px 11px;font-size:.85rem}
+  .burger{margin-left:-6px}
+}
+@media (max-width:360px){
+  .site-header .wrap{padding:0 14px}
+  .wordmark{font-size:1.6rem}
+  .site-header .btn{padding:9px 14px}
+}
 
 /* menu */
 .menu{position:fixed;inset:0;z-index:70;background:var(--lemon);color:var(--brown);display:flex;flex-direction:column;padding:20px;
@@ -312,7 +326,10 @@ textarea.field{min-height:150px;resize:vertical}
       <svg viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z" fill="#14B5B0" stroke="#3A2A16" stroke-width="2.4"/></svg>
       <span aria-hidden="true">nd</span>
     </a>
-    <a class="btn" href="#join">Join</a>
+    <div class="nav-actions">
+      <a class="btn btn--learn" href="learn/">Learn</a>
+      <a class="btn" href="#join">Join</a>
+    </div>
   </div>
 </header>
 
@@ -544,6 +561,7 @@ textarea.field{min-height:150px;resize:vertical}
       <a href="mailto:hello@boondsips.com">hello@boondsips.com</a>
       <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">@boondsips</a>
       <a href="#join">Join the waitlist</a>
+      <a href="learn/">Learn</a>
     </div>
     <p>&copy; <span id="yr">2026</span> Boond</p>
   </div>
