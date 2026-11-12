@@ -46,6 +46,12 @@ Static site for **Boond** (salted sweet, by the drop) at boondsips.com.
 - No analytics, cookies or third-party scripts. The only outside request is the Google Fonts stylesheet,
   the same as the main page.
 
+## Demo pages
+
+- `/demo-home/` previews the dark "Rind & Salt" look with the same content as the home page, plus a light/dark
+  switch and a concept render of the stick packs. It is not linked from anywhere, it is `noindex`, and its forms
+  are switched off (nothing is sent or saved). Delete the folder once a look is chosen.
+
 ## Tests
 
 ```
