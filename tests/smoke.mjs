@@ -206,6 +206,52 @@ let hubItems = [];
   check(tabs.every((t) => reached.has(t)), "all four tabs are reachable with the keyboard", [...reached].join(","));
 }
 
+// ---------- Demo home (dark look preview; nothing is saved) ----------
+{
+  const page = await newPage(390);
+  const external = [];
+  page.on("request", (r) => {
+    const u = new URL(r.url());
+    if (!u.protocol.startsWith("http") || u.origin === BASE || /^fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)) return;
+    external.push(r.url());
+  });
+  check((await open(page, "/demo-home/")) === 200, "demo home loads");
+  check(((await page.locator("meta[name=robots]").getAttribute("content")) || "").includes("noindex"), "demo home is noindex");
+  check((await page.getAttribute("html", "data-theme")) === "dark", "demo home opens in the dark theme");
+  const chips = (await page.locator(".chips .chip").allInnerTexts()).join("|");
+  check(chips === "4 g fiber|4 g sugar|about 200 mg sodium|about 25 cal", "demo home shows the four target chips", chips);
+  check((await page.locator(".targets").innerText()).includes("targets, not final"), "demo home says the numbers are targets, not final");
+  check(await page.locator(".fan").isVisible(), "demo home shows the concept stick packs");
+  check((await page.locator("#track .fcard").count()) === 6 && (await page.locator("#track .fcard h3").first().innerText()) === "Salted Cucumber Mint", "demo home lists six flavors, cucumber mint first");
+  check(await page.locator(".nav-actions a", { hasText: "Learn" }).isVisible() && await page.locator(".nav-actions a[href='#join']").isVisible(), "demo home: Learn and Join are visible at 390px");
+
+  // theme: toggle, remember, toggle back
+  await page.click("#theme");
+  check((await page.getAttribute("html", "data-theme")) === "light", "theme button switches to light");
+  await page.reload(); await page.waitForLoadState("load");
+  check((await page.getAttribute("html", "data-theme")) === "light", "the chosen theme is remembered after a reload");
+  for (const theme of ["light", "dark"]) {
+    if ((await page.getAttribute("html", "data-theme")) !== theme) await page.click("#theme");
+    for (const w of [360, 390, 430]) {
+      await page.setViewportSize({ width: w, height: 844 });
+      check(await noSideScroll(page), `demo home (${theme}): no sideways scroll at ${w}px`);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  // calculator and forms
+  await page.click("#plus");
+  check((await page.textContent("#amt2")) === "400 mg", "calculator doubles the sodium target with 2 sticks");
+  await page.fill("#heroEmail", "a@b.co");
+  await page.click("#heroForm .btn");
+  check((await page.textContent("#heroForm .msg")).includes("tick the box"), "demo form asks for consent");
+  await page.check("#heroForm input[name=consent]");
+  await page.click("#heroForm .btn");
+  check((await page.textContent("#heroForm .msg")).includes("Demo page: nothing was saved"), "demo form says nothing was saved");
+  check(external.length === 0, "demo home sends nothing to any server (fonts aside)", external.join(" | "));
+  check(page.errors.length === 0, "demo home: no console errors", page.errors.join(" | "));
+}
+
 // ---------- Config ----------
 {
   const page = await newPage(390);
