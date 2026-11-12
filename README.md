@@ -1,6 +1,6 @@
 # Boond website
 
-Static site for **Boond** (salted sweet, by the drop) at boondsips.com.
+Static site for **Boond** (salty sweet, by the drop) at boondsips.com.
 
 ## Layout
 
