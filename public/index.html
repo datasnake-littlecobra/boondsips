@@ -129,6 +129,27 @@ textarea.field{min-height:150px;resize:vertical}
 .on-color .consent-check{color:#5A4328}
 .join .consent-check,.join .consent{color:#3A2A16}
 .btn[disabled]{opacity:.6;cursor:wait}
+.vote{padding:80px 0 56px}
+.vote .lede{max-width:640px;margin-top:22px}
+.vlist{list-style:none;margin:32px 0 0;padding:0;display:grid;gap:16px;max-width:760px}
+.vrow{width:100%;display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"dot name pct act" "bar bar bar bar";gap:12px 14px;align-items:center;text-align:left;padding:16px 18px;border:3px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:5px 5px 0 var(--shadow);font:inherit}
+.vrow:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--shadow)}
+.vrow[aria-pressed="true"]{background:var(--c);color:#0E0A05;border-color:#0E0A05}
+.vdot{grid-area:dot;width:30px;height:30px;border-radius:50%;background:var(--c);border:3px solid var(--line)}
+.vrow[aria-pressed="true"] .vdot{background:#FFF2D6;border-color:#0E0A05}
+.vname{grid-area:name;font:700 1.3rem/1.1 "Fredoka",sans-serif}
+.vpct{grid-area:pct;font:700 1.15rem/1 "Fredoka",sans-serif;min-width:3.2ch;text-align:right}
+.vact{grid-area:act;font:800 .9rem/1 "Nunito",sans-serif;padding:9px 14px;border:3px solid currentColor;border-radius:999px;white-space:nowrap}
+.vbar{grid-area:bar;height:14px;border-radius:99px;background:var(--track);border:2px solid var(--line);overflow:hidden}
+.vrow[aria-pressed="true"] .vbar{background:rgba(255,255,255,.55);border-color:#0E0A05}
+.vbar i{display:block;height:100%;width:0;background:var(--c);transition:width .4s}
+.vrow[aria-pressed="true"] .vbar i{background:#0E0A05}
+.vote.few .vbar,.vote.few .vpct{display:none}
+.vnote{margin:18px 0 0;max-width:760px}
+.suggest{margin-top:40px;max-width:760px;padding:26px 24px;border:3px solid var(--line);border-radius:28px;background:var(--surface);box-shadow:8px 8px 0 var(--shadow)}
+.suggest h3{font-size:1.9rem;margin-bottom:10px}
+.suggest p{max-width:60ch}
+.suggest .form-row{margin-top:18px}
 .follow{margin:22px 0 0;font-weight:800}
 .follow a{text-underline-offset:4px}
 .form-msg{font-weight:800;min-height:1.4em;margin:0}
@@ -342,6 +363,7 @@ textarea.field{min-height:150px;resize:vertical}
   </div>
   <nav aria-label="Site">
     <a href="#flavors">Flavors</a>
+    <a href="#vote">Vote</a>
     <a href="#who">Who it's for</a>
     <a href="#how">How it works</a>
     <a href="#math">Do the math</a>
@@ -394,6 +416,32 @@ textarea.field{min-height:150px;resize:vertical}
   <div class="wrap">
     <p class="fine">Draft tasting direction from our own judgment, not lab data. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
     <div class="scroll-cue" aria-hidden="true">SCROLL</div>
+  </div>
+</section>
+
+<!-- FLAVOR VOTE -->
+<section class="vote few" id="vote" aria-labelledby="vote-h">
+  <div class="wrap">
+    <p class="eyebrow"><span class="dot" style="--dc:var(--pink)"></span>Flavor vote</p>
+    <h2 class="h2" id="vote-h">Which one should we make first?</h2>
+    <p class="lede">Tap to vote for as many as you like. Tap again to take a vote back. The bars update as people vote.</p>
+    <ul class="vlist" id="vlist"></ul>
+    <p class="fine vnote" id="vnote">Be one of the first to vote. A friendly poll from visitors to this page, not a survey and not lab data.</p>
+    <div class="suggest">
+      <h3>Don't see yours?</h3>
+      <p>Suggest a flavor from your family's table. We review suggestions before anything is added, and we don't publish what you type.</p>
+      <form class="form-row" id="suggestForm" novalidate>
+        <label class="sr-only" for="suggestText">A flavor you would like us to make</label>
+        <input class="field" id="suggestText" name="suggestion" type="text" maxlength="60" autocomplete="off" placeholder="Your flavor idea" required>
+        <label class="sr-only" for="suggestEmail">Your email (optional)</label>
+        <input class="field" id="suggestEmail" name="email" type="email" autocomplete="email" placeholder="Your email (optional)">
+        <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+        <button class="btn btn--ghost" type="submit">Send my suggestion</button>
+        <p class="consent">The box above is only needed if you add your email.</p>
+        <p class="form-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -538,7 +586,7 @@ textarea.field{min-height:150px;resize:vertical}
       <label class="sr-only" for="joinEmail">Your email</label>
       <input class="field" id="joinEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
       <fieldset class="checks" id="joinPicks">
-        <legend>Flavors I'd try (optional)</legend>
+        <legend>Flavors I'd try (optional, these count as votes)</legend>
       </fieldset>
       <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
@@ -637,14 +685,14 @@ textarea.field{min-height:150px;resize:vertical}
       b.textContent = on ? "On my list ✓" : "I'd try this";
     });
     document.querySelectorAll('#joinPicks input').forEach(function(cb){ cb.checked = !!picks[cb.value]; });
+    if (window.renderVote) window.renderVote();
   }
   track.addEventListener("click", function(e){
     var b = e.target.closest(".try"); if (!b) return;
-    picks[b.dataset.id] = !picks[b.dataset.id]; savePicks(); renderPicks();
-    if (picks[b.dataset.id]) sendVote(b.dataset.id);
+    setVote(b.dataset.id, !picks[b.dataset.id]);
   });
   $("joinPicks").addEventListener("change", function(e){
-    if (e.target.name === "flavors") { picks[e.target.value] = e.target.checked; savePicks(); renderPicks(); }
+    if (e.target.name === "flavors") setVote(e.target.value, e.target.checked);
   });
   renderPicks();
 
@@ -746,7 +794,8 @@ textarea.field{min-height:150px;resize:vertical}
     invalid_email: "Please enter a valid email.",
     consent_required: "Please tick the box so we can email you.",
     invalid_story: "Please write a short story (up to 1,000 characters).",
-    busy: "We are getting a lot of sign-ups right now. Please try again in a minute."
+    busy: "We are getting a lot of sign-ups right now. Please try again in a minute.",
+    invalid_suggestion: "Please enter a flavor name, 2 to 60 characters, with no links."
   };
   var GENERIC = "Something went wrong. Please try again, or write to hello@boondsips.com.";
   function post(payload){
@@ -754,14 +803,71 @@ textarea.field{min-height:150px;resize:vertical}
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }, function(){ return {ok:r.ok, body:{}}; }); });
   }
   function pickedIds(){ return Object.keys(picks).filter(function(k){ return picks[k]; }); }
-  var voted = {};
-  try { voted = JSON.parse(localStorage.getItem("boondVoted") || "{}") || {}; } catch(e) { voted = {}; }
-  function sendVote(flavor){
-    if (voted[flavor]) return;
-    voted[flavor] = true;
-    try { localStorage.setItem("boondVoted", JSON.stringify(voted)); } catch(e){}
-    post({action:"vote", flavor:flavor}).catch(function(){});
+  /* ---- flavor vote: one anonymous vote per browser per flavor, live tally ---- */
+  var voter = null;
+  try { voter = localStorage.getItem("boondVoter"); } catch(e){}
+  if (!voter || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(voter)) {
+    voter = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c){ var r = Math.random()*16|0; return (c === "x" ? r : (r&3|8)).toString(16); });
+    try { localStorage.setItem("boondVoter", voter); } catch(e){}
   }
+  var tally = {}, tallyTotal = 0, tallyOk = false, MIN_SHOWN = 10;
+  FLAVORS.forEach(function(f){ tally[f.id] = 0; });
+  $("vlist").innerHTML = FLAVORS.map(function(f){
+    return '<li><button class="vrow" type="button" data-id="'+f.id+'" aria-pressed="false" style="--c:'+f.c+'">'+
+      '<span class="vdot" aria-hidden="true"></span><span class="vname">'+esc(f.name.replace("Salted ",""))+'</span><span class="vpct" aria-hidden="true"></span>'+
+      '<span class="vact">Vote</span><span class="vbar" aria-hidden="true"><i></i></span></button></li>';
+  }).join("");
+  window.renderVote = function(){
+    var box = $("vote"), few = !tallyOk || tallyTotal < MIN_SHOWN;
+    box.classList.toggle("few", few);
+    $("vnote").textContent = few
+      ? "Be one of the first to vote. A friendly poll from visitors to this page, not a survey and not lab data."
+      : "A friendly poll from visitors to this page, not a survey and not lab data.";
+    Array.prototype.forEach.call($("vlist").querySelectorAll(".vrow"), function(b){
+      var id = b.dataset.id, on = !!picks[id], n = tally[id] || 0, pct = tallyTotal ? Math.round(n / tallyTotal * 100) : 0;
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.querySelector(".vact").textContent = on ? "Voted \u2713" : "Vote";
+      b.querySelector(".vpct").textContent = few ? "" : pct + "%";
+      b.querySelector(".vbar i").style.width = (few ? 0 : pct) + "%";
+      var f = FLAVORS.filter(function(x){ return x.id === id; })[0];
+      b.setAttribute("aria-label", esc(f.name) + (on ? ", you voted. Tap to take your vote back." : ". Tap to vote.") + (few ? "" : " " + pct + " percent of votes."));
+    });
+  };
+  function loadTally(){
+    return post({action:"tally"}).then(function(res){
+      if (res.ok && res.body && res.body.tally) { tally = res.body.tally; tallyTotal = res.body.total || 0; tallyOk = true; renderVote(); }
+    }).catch(function(){});
+  }
+  function setVote(id, on){
+    if (!!picks[id] === !!on) return;
+    picks[id] = !!on; savePicks();
+    tally[id] = Math.max(0, (tally[id] || 0) + (on ? 1 : -1)); tallyTotal = Math.max(0, tallyTotal + (on ? 1 : -1));
+    renderPicks();
+    post({action: on ? "vote" : "unvote", flavor:id, voter:voter}).then(loadTally).catch(function(){});
+  }
+  $("vlist").addEventListener("click", function(e){
+    var b = e.target.closest(".vrow"); if (!b) return;
+    setVote(b.dataset.id, !picks[b.dataset.id]);
+  });
+  renderVote(); loadTally();
+
+  /* ---- flavor suggestions: private, reviewed by the owner, never shown on the page ---- */
+  (function(){
+    var form = $("suggestForm"), msg = form.querySelector(".form-msg"), btn = form.querySelector('button[type="submit"]');
+    form.addEventListener("submit", function(e){
+      e.preventDefault(); msg.textContent = "";
+      var text = $("suggestText").value.replace(/\s+/g," ").trim(), emailVal = $("suggestEmail").value.trim();
+      var consent = form.querySelector('input[name="consent"]');
+      if (text.length < 2 || text.length > 60 || /https?:|www\.|@|<|>/i.test(text)) { msg.textContent = ERR.invalid_suggestion; $("suggestText").focus(); return; }
+      if (emailVal && !EMAIL.test(emailVal)) { msg.textContent = ERR.invalid_email; $("suggestEmail").focus(); return; }
+      if (emailVal && !consent.checked) { msg.textContent = ERR.consent_required; consent.focus(); return; }
+      btn.disabled = true;
+      post({action:"suggest", suggestion:text, email:emailVal, consent:consent.checked, website:form.querySelector('input[name="website"]').value}).then(function(res){
+        if (res.ok && res.body && res.body.ok) { msg.textContent = "Thank you. We'll review it."; form.reset(); }
+        else msg.textContent = ERR[res.body && res.body.error] || GENERIC;
+      }).catch(function(){ msg.textContent = GENERIC; }).then(function(){ btn.disabled = false; });
+    });
+  })();
   ["heroForm","storyForm","joinForm"].forEach(function(id){
     var form = $(id); if (!form) return;
     var msg = form.querySelector(".form-msg"), btn = form.querySelector('button[type="submit"]');

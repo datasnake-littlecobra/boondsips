@@ -39,6 +39,17 @@ const newPage = async (width = 390, height = 844, colorScheme = "light") => {
     if (/fonts\.(googleapis|gstatic)\.com/.test(m.location().url || "")) return; // ignore font load failures
     page.errors.push(m.text());
   });
+  // Stand-in for the waitlist function, so tests never touch the real database.
+  page.api = { calls: [], tally: { cucumber: 0, watermelon: 0, mango: 0, guava: 0, plum: 0, lemon: 0 }, total: 0 };
+  await page.route("**/functions/v1/boond-waitlist", async (route) => {
+    const H = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "POST, OPTIONS", "content-type": "application/json" };
+    const req = route.request();
+    if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: H });
+    const body = JSON.parse(req.postData() || "{}");
+    page.api.calls.push(body);
+    if (body.action === "tally") return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, tally: page.api.tally, total: page.api.total }) });
+    return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true }) });
+  });
   return page;
 };
 const noSideScroll = (page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
@@ -250,6 +261,73 @@ let hubItems = [];
   check((await page.textContent("#heroForm .msg")).includes("Demo page: nothing was saved"), "demo form says nothing was saved");
   check(external.length === 0, "demo home sends nothing to any server (fonts aside)", external.join(" | "));
   check(page.errors.length === 0, "demo home: no console errors", page.errors.join(" | "));
+}
+
+// ---------- Flavor vote and suggestions ----------
+{
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const page = await newPage(390);
+  check((await open(page, "/")) === 200, "vote: home loads");
+  await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  check(await page.locator(".menu nav a[href='#vote']").count() === 1, "vote: menu has a Vote link");
+  const names = (await page.locator("#vlist .vname").allInnerTexts()).join("|");
+  check(names === "Cucumber Mint|Watermelon|Mango|Guava|Plum|Lemon", "vote: six flavors in launch order", names);
+  check((await page.locator("#vote").getAttribute("class")).includes("few") && !(await page.locator("#vlist .vbar").first().isVisible()), "vote: with few votes, no percentages are shown");
+  check((await page.locator("#vnote").innerText()).includes("Be one of the first"), "vote: shows 'be one of the first' when there are few votes");
+
+  // percentages appear once there are enough votes
+  page.api.tally = { cucumber: 10, watermelon: 6, mango: 4, guava: 0, plum: 0, lemon: 0 }; page.api.total = 20;
+  await page.reload(); await page.waitForFunction(() => !document.getElementById("vote").classList.contains("few"));
+  const pcts = (await page.locator("#vlist .vpct").allInnerTexts()).slice(0, 3).join("|");
+  check(pcts === "50%|30%|20%", "vote: percentages match the tally", pcts);
+  check(await page.locator("#vlist .vrow").first().evaluate((e) => e.querySelector(".vbar i").style.width) === "50%", "vote: bar width matches the percentage");
+  check(!(await page.content()).includes("undefined"), "vote: nothing renders as 'undefined'");
+
+  // voting, taking a vote back, one voter id, sync with the other buttons
+  page.api.calls.length = 0;
+  const mango = page.locator("#vlist .vrow[data-id=mango]");
+  await mango.click();
+  check((await mango.getAttribute("aria-pressed")) === "true" && (await mango.locator(".vact").innerText()).startsWith("Voted"), "vote: tapping a flavor votes for it");
+  await page.waitForFunction(() => true); await page.waitForTimeout(250);
+  const v1 = page.api.calls.find((c) => c.action === "vote");
+  check(v1 && v1.flavor === "mango" && UUID.test(v1.voter), "vote: sends the flavor and an anonymous voter id", JSON.stringify(v1));
+  check((await page.locator(".try[data-id=mango]").getAttribute("aria-pressed")) === "true", "vote: the carousel 'I'd try this' button follows");
+  await mango.click(); await page.waitForTimeout(250);
+  const u1 = page.api.calls.find((c) => c.action === "unvote");
+  check((await mango.getAttribute("aria-pressed")) === "false" && u1 && u1.flavor === "mango" && u1.voter === v1.voter, "vote: tapping again takes the vote back with the same voter id");
+  await page.reload(); await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  await page.locator("#vlist .vrow[data-id=guava]").click(); await page.waitForTimeout(250);
+  const v2 = page.api.calls.filter((c) => c.action === "vote").pop();
+  check(v2.voter === v1.voter, "vote: the voter id is kept after a reload");
+  await page.locator(".try[data-id=plum]").click(); await page.waitForTimeout(150);
+  check((await page.locator("#vlist .vrow[data-id=plum]").getAttribute("aria-pressed")) === "true", "vote: the carousel button also marks the vote row");
+  await page.check("#joinPicks input[value=lemon]"); await page.waitForTimeout(250);
+  check(page.api.calls.some((c) => c.action === "vote" && c.flavor === "lemon") && (await page.locator("#vlist .vrow[data-id=lemon]").getAttribute("aria-pressed")) === "true", "vote: a flavor ticked in the join form counts as a vote");
+  check((await page.locator("#joinPicks legend").innerText()).includes("count as votes"), "vote: the join form says those picks count as votes");
+
+  // suggestions
+  page.api.calls.length = 0;
+  const msg = () => page.textContent("#suggestForm .form-msg");
+  check(await page.locator("#suggestForm input[name=website]").count() === 1, "suggest: has a hidden spam-trap field");
+  await page.click("#suggestForm button"); check((await msg()).includes("flavor name"), "suggest: empty is refused");
+  await page.fill("#suggestText", "see www.spam.com"); await page.click("#suggestForm button"); check((await msg()).includes("no links"), "suggest: links are refused");
+  await page.fill("#suggestText", "guava with chaat masala"); await page.fill("#suggestEmail", "not-an-email"); await page.click("#suggestForm button");
+  check((await msg()).includes("valid email"), "suggest: a bad email is refused");
+  await page.fill("#suggestEmail", "a@b.co"); await page.click("#suggestForm button");
+  check((await msg()).includes("tick the box") && page.api.calls.length === 0, "suggest: an email without consent is refused and sends nothing");
+  await page.fill("#suggestEmail", ""); await page.fill("#suggestText", "  tamarind   with salt  "); await page.click("#suggestForm button"); await page.waitForTimeout(300);
+  const sg = page.api.calls.find((c) => c.action === "suggest");
+  check(sg && sg.suggestion === "tamarind with salt" && sg.email === "" && sg.consent === false && sg.website === "", "suggest: sends the tidied text, with no email and no consent", JSON.stringify(sg));
+  check((await msg()).includes("Thank you") && (await page.inputValue("#suggestText")) === "", "suggest: confirms and clears the form");
+  check(!(await page.locator("body").innerText()).includes("tamarind"), "suggest: nothing typed is shown on the page");
+  await page.fill("#suggestText", "kala khatta"); await page.fill("#suggestEmail", "c@d.co"); await page.check("#suggestForm input[name=consent]"); await page.click("#suggestForm button"); await page.waitForTimeout(300);
+  const sg2 = page.api.calls.filter((c) => c.action === "suggest").pop();
+  check(sg2.email === "c@d.co" && sg2.consent === true, "suggest: with an email and consent, both are sent");
+
+  for (const w of [360, 390, 430]) { await page.setViewportSize({ width: w, height: 844 }); check(await noSideScroll(page), `vote: no sideways scroll at ${w}px`); }
+  const dark = await newPage(390, 844, "dark"); await open(dark, "/"); await dark.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  for (const w of [360, 390, 430]) { await dark.setViewportSize({ width: w, height: 844 }); check(await noSideScroll(dark), `vote (dark): no sideways scroll at ${w}px`); }
+  check(page.errors.length === 0 && dark.errors.length === 0, "vote: no console errors", page.errors.concat(dark.errors).join(" | "));
 }
 
 // ---------- Config ----------

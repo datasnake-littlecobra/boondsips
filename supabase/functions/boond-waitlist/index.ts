@@ -1,12 +1,12 @@
 // Boond waitlist endpoint (Supabase Edge Function, public, verify_jwt = false).
-// Actions: signup, vote, story, unsubscribe. The service key is injected by
+// Actions: signup, vote, unvote, tally, suggest, story, unsubscribe. The service key is injected by
 // Supabase at runtime and never leaves it. Tables are boond_* with RLS on.
 //
 // Keep CONSENT_TEXT identical to the text shown next to the checkboxes on the site.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const FLAVORS = ["cucumber", "watermelon", "mango", "guava", "plum", "lemon"];
-const SOURCES = ["hero", "story", "join"];
+const SOURCES = ["hero", "story", "join", "suggest"];
 const CONSENT_TEXT =
   "I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.";
 
@@ -134,8 +134,61 @@ Deno.serve(async (req: Request) => {
         if (typeof body.flavor !== "string" || !FLAVORS.includes(body.flavor)) {
           return json({ error: "invalid_flavor" }, 400, cors);
         }
+        const voter = typeof body.voter === "string" && UUID_RE.test(body.voter) ? body.voter.toLowerCase() : null;
         if (await tooMany("boond_flavor_votes", 60)) return json({ error: "busy" }, 429, cors);
-        const { error } = await db.from("boond_flavor_votes").insert({ flavor: body.flavor });
+        if (voter) {
+          // one anonymous vote per browser per flavor; repeats change nothing
+          const { error } = await db
+            .from("boond_flavor_votes")
+            .upsert({ flavor: body.flavor, voter_token: voter }, { onConflict: "voter_token,flavor", ignoreDuplicates: true });
+          if (error) throw error;
+        } else {
+          const { error } = await db.from("boond_flavor_votes").insert({ flavor: body.flavor });
+          if (error) throw error;
+        }
+        return json({ ok: true }, 200, cors);
+      }
+
+      case "unvote": {
+        if (typeof body.flavor !== "string" || !FLAVORS.includes(body.flavor)) {
+          return json({ error: "invalid_flavor" }, 400, cors);
+        }
+        if (typeof body.voter !== "string" || !UUID_RE.test(body.voter)) return json({ error: "invalid_voter" }, 400, cors);
+        const { error } = await db
+          .from("boond_flavor_votes")
+          .delete()
+          .eq("voter_token", body.voter.toLowerCase())
+          .eq("flavor", body.flavor);
+        if (error) throw error;
+        return json({ ok: true }, 200, cors);
+      }
+
+      case "tally": {
+        const { data, error } = await db.rpc("boond_flavor_tally");
+        if (error) throw error;
+        const tally: Record<string, number> = {};
+        for (const f of FLAVORS) tally[f] = 0;
+        for (const row of (data ?? []) as { flavor: string; votes: number }[]) {
+          if (FLAVORS.includes(row.flavor)) tally[row.flavor] = Number(row.votes);
+        }
+        const total = Object.values(tally).reduce((a, b) => a + b, 0);
+        return json({ ok: true, tally, total }, 200, cors);
+      }
+
+      case "suggest": {
+        const text = typeof body.suggestion === "string" ? body.suggestion.replace(/\s+/g, " ").trim() : "";
+        if (text.length < 2 || text.length > 60) return json({ error: "invalid_suggestion" }, 400, cors);
+        if (/https?:|www\.|@|<|>/i.test(text)) return json({ error: "invalid_suggestion" }, 400, cors);
+        if (await tooMany("boond_flavor_suggestions", 20)) return json({ error: "busy" }, 429, cors);
+        let signupId: string | null = null;
+        const rawEmail = typeof body.email === "string" ? body.email.trim() : "";
+        if (rawEmail !== "") {
+          const email = cleanEmail(rawEmail);
+          if (!email) return json({ error: "invalid_email" }, 400, cors);
+          if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
+          signupId = await upsertSignup(email, [], "suggest");
+        }
+        const { error } = await db.from("boond_flavor_suggestions").insert({ suggestion: text, signup_id: signupId });
         if (error) throw error;
         return json({ ok: true }, 200, cors);
       }
