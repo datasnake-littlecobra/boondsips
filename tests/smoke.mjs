@@ -233,7 +233,7 @@ let hubItems = [];
   check(chips === "4 g fiber|4 g sugar|about 200 mg sodium|about 25 cal", "demo home shows the four target chips", chips);
   check((await page.locator(".targets").innerText()).includes("targets while we test"), "demo home says the numbers are targets while we test");
   check(await page.locator(".fan").isVisible(), "demo home shows the concept stick packs");
-  check((await page.locator("#track .fcard").count()) === 6 && (await page.locator("#track .fcard h3").first().innerText()) === "Salted Cucumber Mint", "demo home lists six flavors, cucumber mint first");
+  check((await page.locator("#track .fcard").count()) === 6 && (await page.locator("#track .fcard h3").first().innerText()) === "Salty Cucumber Mint", "demo home lists six flavors, cucumber mint first");
   check(await page.locator(".nav-actions a", { hasText: "Learn" }).isVisible() && await page.locator(".nav-actions a[href='#join']").isVisible(), "demo home: Learn and Join are visible at 390px");
 
   // theme: toggle, remember, toggle back

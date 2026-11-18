@@ -13,7 +13,8 @@ Boond is a US powder drink-stick brand (salty-sweet, "hydration with fiber"). Th
 
 ## Brand
 
-- Name: Boond (not "Boond Sips"). "sips" appears only in the domain and handle (boondsips.com, @boondsips).
+- Name: Boond. Never write "Boond Sips" as the name in copy. "sips" appears in the domain and handle (boondsips.com, @boondsips) and in the small "sips" pill under the wordmark in the profile picture and logo lockup.
+- Flavor names use "Salty" (Salty Mango, Salty Watermelon), never "Salted", in our own copy. Names of existing foods (salted caramel, salted plum) stay as they are.
 - Tagline: "salty sweet, by the drop". Descriptor: "hydration with fiber".
 - Colors: cream #FFF2D6, brown #3A2A16, orange #FF8A1F, teal #14B5B0, pink #FF7DA0, green #3FBF7A. Flavors: lemon #FFD23F, mango #FF8A1F, watermelon #FF4F7E, plum #7A3FB8, guava #FF9DB0, cucumber mint #3FBF7A.
 - Fonts: Fredoka (wordmark, numbers), Nunito (everything else).
