@@ -24,7 +24,7 @@ Boond is a US powder drink-stick brand (salty-sweet, "hydration with fiber"). Th
 - No health claims, stated or implied: no gut, digestion, immunity, energy, recovery, detox, "healthy", "prebiotic".
 - Never use the word "gentle" in public copy.
 - No marketing to children and no children in images.
-- Per-stick numbers (4 g fiber, 4 g sugar, about 200 mg sodium, about 100 mg potassium, about 25 calories) are TARGETS, not final. Keep the "targets, not final" wording wherever they appear.
+- Per-stick numbers (4 g fiber, 4 g sugar, about 200 mg sodium, about 100 mg potassium, about 25 calories) are TARGETS. Say "targets while we test" wherever they appear.
 - The product is not for sale yet. Call to action is "join the waitlist", never "buy".
 - Cite sources for any factual claim; link them.
 - Only use facts and links from sources someone has actually opened. Unverified links stay out of the page.
