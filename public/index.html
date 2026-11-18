@@ -133,6 +133,22 @@ textarea.field{min-height:150px;resize:vertical}
 .on-color .consent-check{color:#5A4328}
 .join .consent-check,.join .consent{color:#3A2A16}
 .btn[disabled]{opacity:.6;cursor:wait}
+[hidden]{display:none!important}
+.later{background:none;border:0;font:800 .95rem/1 "Nunito",sans-serif;color:var(--ink);text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:10px 4px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:65;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px));pointer-events:none}
+.sheet-card{pointer-events:auto;width:100%;max-width:560px;max-height:calc(100svh - 96px);overflow:auto;background:var(--surface);color:var(--ink);border:3px solid var(--line);border-radius:26px;box-shadow:8px 8px 0 var(--shadow);padding:20px 20px 14px;animation:sheetUp .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet-card h3{font-size:1.55rem;margin-bottom:6px}
+.sheet-card p{font-size:.98rem;margin:0 0 12px;color:var(--muted)}
+.sheet-card .field{padding:14px 18px;border-radius:16px;font-size:1rem;margin-bottom:12px}
+.sheet-card .consent-check{margin-bottom:6px}
+.sheet-card .sheet-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.sheet-card .btn{padding:14px 22px}
+.sheet-card .form-msg{margin:6px 0 0;min-height:1.2em;font-size:.95rem}
+.joined-note{max-width:520px;border:3px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);padding:18px 20px;box-shadow:5px 5px 0 var(--shadow)}
+.joined-note b{font:700 1.35rem/1.2 "Fredoka",sans-serif}
+.joined-note p{margin:6px 0 4px;color:var(--muted);font-size:.98rem}
+@media (prefers-reduced-motion: reduce){.sheet-card{animation:none}}
 .vote{padding:80px 0 56px}
 .vote .lede{max-width:640px;margin-top:22px}
 .vlist{list-style:none;margin:32px 0 0;padding:0;display:grid;gap:16px;max-width:760px}
@@ -625,6 +641,19 @@ textarea.field{min-height:150px;resize:vertical}
   </div>
 </footer>
 
+<div class="sheet" id="saveSheet" hidden>
+  <form class="sheet-card" id="saveForm" role="dialog" aria-labelledby="saveTitle" novalidate>
+    <h3 id="saveTitle">Save your picks</h3>
+    <p>Add your email and we'll keep your picks and tell you when we taste-test them.</p>
+    <label class="sr-only" for="saveEmail">Your email</label>
+    <input class="field" id="saveEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
+    <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+    <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+    <div class="sheet-row"><button class="btn" type="submit">Save my picks</button><button class="later" type="button" id="saveLater">No thanks</button></div>
+    <p class="form-msg" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -694,10 +723,10 @@ textarea.field{min-height:150px;resize:vertical}
   }
   track.addEventListener("click", function(e){
     var b = e.target.closest(".try"); if (!b) return;
-    setVote(b.dataset.id, !picks[b.dataset.id]);
+    setVote(b.dataset.id, !picks[b.dataset.id], "card");
   });
   $("joinPicks").addEventListener("change", function(e){
-    if (e.target.name === "flavors") setVote(e.target.value, e.target.checked);
+    if (e.target.name === "flavors") setVote(e.target.value, e.target.checked, "join");
   });
   renderPicks();
 
@@ -843,18 +872,71 @@ textarea.field{min-height:150px;resize:vertical}
       if (res.ok && res.body && res.body.tally) { tally = res.body.tally; tallyTotal = res.body.total || 0; tallyOk = true; renderVote(); }
     }).catch(function(){});
   }
-  function setVote(id, on){
+  function setVote(id, on, from){
     if (!!picks[id] === !!on) return;
     picks[id] = !!on; savePicks();
     tally[id] = Math.max(0, (tally[id] || 0) + (on ? 1 : -1)); tallyTotal = Math.max(0, tallyTotal + (on ? 1 : -1));
     renderPicks();
+    if (on && from !== "join") offerSave();
     post({action: on ? "vote" : "unvote", flavor:id, voter:voter}).then(loadTally).catch(function(){});
   }
   $("vlist").addEventListener("click", function(e){
     var b = e.target.closest(".vrow"); if (!b) return;
-    setVote(b.dataset.id, !picks[b.dataset.id]);
+    setVote(b.dataset.id, !picks[b.dataset.id], "vote");
   });
   renderVote(); loadTally();
+
+  /* ---- remember this browser: "you're on the list", and the save-your-picks sheet (no email is stored in the browser) ---- */
+  var joined = false, sheetShown = false, SHEET_PAUSE = 14 * 24 * 3600 * 1000;
+  try { joined = localStorage.getItem("boondJoined") === "1"; } catch(e){}
+  function sheetPaused(){ try { var t = parseInt(localStorage.getItem("boondSheetDismissed") || "0", 10); return !!t && Date.now() - t < SHEET_PAUSE; } catch(e){ return false; } }
+  function renderJoined(){
+    ["heroForm","joinForm"].forEach(function(id){
+      var form = $(id); if (!form) return;
+      var note = $(id + "Joined");
+      if (!note) {
+        note = document.createElement("div"); note.id = id + "Joined"; note.className = "joined-note"; note.setAttribute("role","status");
+        note.innerHTML = '<b>You\'re on the list \u2713</b><p>Thanks! We\'ll email you about the taste test. Your picks are saved.</p><button type="button" class="later">Use a different email</button>';
+        form.parentNode.insertBefore(note, form.nextSibling);
+        note.querySelector("button").addEventListener("click", function(){ setJoined(false); });
+      }
+      form.hidden = joined; note.hidden = !joined;
+    });
+  }
+  function setJoined(v){
+    joined = !!v;
+    try { if (joined) localStorage.setItem("boondJoined","1"); else localStorage.removeItem("boondJoined"); } catch(e){}
+    renderJoined();
+  }
+  var sheet = $("saveSheet"), saveForm = $("saveForm");
+  function closeSheet(dismissed){
+    sheet.hidden = true;
+    if (dismissed) { try { localStorage.setItem("boondSheetDismissed", String(Date.now())); } catch(e){} }
+  }
+  function offerSave(){
+    if (joined || sheetShown || sheetPaused()) return;
+    sheetShown = true;
+    setTimeout(function(){ if (!joined) sheet.hidden = false; }, 700);
+  }
+  $("saveLater").addEventListener("click", function(){ closeSheet(true); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !sheet.hidden) closeSheet(true); });
+  saveForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var msg = saveForm.querySelector(".form-msg"), btn = saveForm.querySelector('button[type="submit"]');
+    var emailVal = $("saveEmail").value.trim(), consent = saveForm.querySelector('input[name="consent"]');
+    msg.textContent = "";
+    if (!EMAIL.test(emailVal)) { msg.textContent = ERR.invalid_email; $("saveEmail").focus(); return; }
+    if (!consent.checked) { msg.textContent = ERR.consent_required; consent.focus(); return; }
+    btn.disabled = true;
+    post({action:"signup", email:emailVal, consent:true, source:"vote", flavors:pickedIds(), voter:voter, website:saveForm.querySelector('input[name="website"]').value}).then(function(res){
+      if (res.ok && res.body && res.body.ok) {
+        msg.textContent = "Saved. You're on the list. Thank you!";
+        setJoined(true); saveForm.reset();
+        setTimeout(function(){ closeSheet(false); }, 1400);
+      } else msg.textContent = ERR[res.body && res.body.error] || GENERIC;
+    }).catch(function(){ msg.textContent = GENERIC; }).then(function(){ btn.disabled = false; });
+  });
+  renderJoined();
 
   /* ---- flavor suggestions: private, reviewed by the owner, never shown on the page ---- */
   (function(){
@@ -867,8 +949,8 @@ textarea.field{min-height:150px;resize:vertical}
       if (emailVal && !EMAIL.test(emailVal)) { msg.textContent = ERR.invalid_email; $("suggestEmail").focus(); return; }
       if (emailVal && !consent.checked) { msg.textContent = ERR.consent_required; consent.focus(); return; }
       btn.disabled = true;
-      post({action:"suggest", suggestion:text, email:emailVal, consent:consent.checked, website:form.querySelector('input[name="website"]').value}).then(function(res){
-        if (res.ok && res.body && res.body.ok) { msg.textContent = "Thank you. We'll review it."; form.reset(); }
+      post({action:"suggest", suggestion:text, email:emailVal, consent:consent.checked, voter:voter, website:form.querySelector('input[name="website"]').value}).then(function(res){
+        if (res.ok && res.body && res.body.ok) { msg.textContent = "Thank you. We'll review it."; form.reset(); if (emailVal) setJoined(true); }
         else msg.textContent = ERR[res.body && res.body.error] || GENERIC;
       }).catch(function(){ msg.textContent = GENERIC; }).then(function(){ btn.disabled = false; });
     });
@@ -893,11 +975,13 @@ textarea.field{min-height:150px;resize:vertical}
         payload = {action:"signup", email:emailVal, consent:true, source:(id === "heroForm" ? "hero" : "join"), flavors:pickedIds()};
       }
       payload.website = hp ? hp.value : "";
+      payload.voter = voter;
       btn.disabled = true;
       post(payload).then(function(res){
         if (res.ok && res.body && res.body.ok) {
           msg.textContent = id === "storyForm" ? "Thank you for sharing your story." : "You're on the list. Thank you!";
           form.reset(); renderPicks();
+          if (id !== "storyForm" || payload.email) setJoined(true);
         } else {
           msg.textContent = ERR[res.body && res.body.error] || GENERIC;
         }
