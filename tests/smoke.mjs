@@ -274,6 +274,9 @@ let hubItems = [];
   check(names === "Cucumber Mint|Watermelon|Mango|Guava|Plum|Lemon", "vote: six flavors in launch order", names);
   check((await page.locator("#vote").getAttribute("class")).includes("few") && !(await page.locator("#vlist .vbar").first().isVisible()), "vote: with few votes, no percentages are shown");
   check((await page.locator("#vnote").innerText()).includes("Be one of the first"), "vote: shows 'be one of the first' when there are few votes");
+  check((await page.locator("#vnote").innerText()).includes("taste validation phase"), "vote: the note uses the friendly 'taste validation phase' wording");
+  const body = await page.locator("body").innerText();
+  check(!/lab data|draft direction|draft tasting/i.test(body), "wording: no 'lab data' or 'draft direction' left on the home page");
 
   // percentages appear once there are enough votes
   page.api.tally = { cucumber: 10, watermelon: 6, mango: 4, guava: 0, plum: 0, lemon: 0 }; page.api.total = 20;

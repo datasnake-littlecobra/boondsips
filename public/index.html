@@ -414,7 +414,7 @@ textarea.field{min-height:150px;resize:vertical}
   </div>
   <div class="track" id="track" tabindex="0" aria-label="Flavor cards"></div>
   <div class="wrap">
-    <p class="fine">Draft tasting direction from our own judgment, not lab data. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
+    <p class="fine">We're in our taste validation phase, so these notes will keep improving. Tap "I'd try this" to vote, and we'll build it for you all.</p>
     <div class="scroll-cue" aria-hidden="true">SCROLL</div>
   </div>
 </section>
@@ -424,9 +424,9 @@ textarea.field{min-height:150px;resize:vertical}
   <div class="wrap">
     <p class="eyebrow"><span class="dot" style="--dc:var(--pink)"></span>Flavor vote</p>
     <h2 class="h2" id="vote-h">Which one should we make first?</h2>
-    <p class="lede">Tap to vote for as many as you like. Tap again to take a vote back. The bars update as people vote.</p>
+    <p class="lede">Vote to help us decide, and we'll build it for you all. Tap as many as you like, and tap again to take a vote back. The bars update as people vote.</p>
     <ul class="vlist" id="vlist"></ul>
-    <p class="fine vnote" id="vnote">Be one of the first to vote. A friendly poll from visitors to this page, not a survey and not lab data.</p>
+    <p class="fine vnote" id="vnote">Be one of the first to vote. We're in our taste validation phase, and your vote helps us decide what to build.</p>
     <div class="suggest">
       <h3>Don't see yours?</h3>
       <p>Suggest a flavor from your family's table. We review suggestions before anything is added, and we don't publish what you type.</p>
@@ -662,7 +662,7 @@ textarea.field{min-height:150px;resize:vertical}
     }).join("");
     return '<article class="card" style="--c:'+f.c+';--ci:'+f.ink+'">'+
       '<div class="card-top"><div class="row"><span class="num">0'+(i+1)+'</span><span class="chip chip--green">4 g fiber target</span></div><h3>'+esc(f.name).replace(" ","<br>")+'</h3></div>'+
-      '<div class="card-body"><p>'+esc(f.card)+'</p><div class="meter">'+meter+'</div><p class="fine">Draft direction, not lab data.</p>'+
+      '<div class="card-body"><p>'+esc(f.card)+'</p><div class="meter">'+meter+'</div><p class="fine">Taste validation phase.</p>'+
       '<button class="try" type="button" data-id="'+f.id+'" aria-pressed="false">I\'d try this</button></div></article>';
   }).join("");
   function cardStep(){ var c = track.querySelector(".card"); return c ? c.getBoundingClientRect().width + 22 : 300; }
@@ -821,8 +821,8 @@ textarea.field{min-height:150px;resize:vertical}
     var box = $("vote"), few = !tallyOk || tallyTotal < MIN_SHOWN;
     box.classList.toggle("few", few);
     $("vnote").textContent = few
-      ? "Be one of the first to vote. A friendly poll from visitors to this page, not a survey and not lab data."
-      : "A friendly poll from visitors to this page, not a survey and not lab data.";
+      ? "Be one of the first to vote. We're in our taste validation phase, and your vote helps us decide what to build."
+      : "We're in our taste validation phase. Thank you for voting, your votes help us decide what to build for you all.";
     Array.prototype.forEach.call($("vlist").querySelectorAll(".vrow"), function(b){
       var id = b.dataset.id, on = !!picks[id], n = tally[id] || 0, pct = tallyTotal ? Math.round(n / tallyTotal * 100) : 0;
       b.setAttribute("aria-pressed", on ? "true" : "false");
