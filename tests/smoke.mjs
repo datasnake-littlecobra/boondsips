@@ -278,6 +278,24 @@ let hubItems = [];
   const body = await page.locator("body").innerText();
   check(!/lab data|draft direction|draft tasting/i.test(body), "wording: no 'lab data' or 'draft direction' left on the home page");
 
+  // the Vote button near the top
+  const jump = page.locator("#voteJump");
+  check(await jump.isVisible() && (await jump.getAttribute("href")) === "#vote", "vote button: the home page has a 'Vote for a flavor' button linking to #vote");
+  for (const [w, h] of [[390, 844], [360, 640]]) {
+    await page.setViewportSize({ width: w, height: h }); await page.evaluate(() => window.scrollTo(0, 0));
+    const bx = await jump.boundingBox();
+    check(bx && bx.y >= 0 && bx.y + bx.height <= h, `vote button: visible without scrolling at ${w}x${h}`, JSON.stringify(bx));
+  }
+  const joinBox = await page.locator("#heroForm button[type=submit]").boundingBox(), vb = await jump.boundingBox();
+  check(vb.height <= joinBox.height && vb.width <= 260 && (await page.locator("#heroForm button[type=submit]").evaluate((e) => getComputedStyle(e).backgroundColor)) !== (await jump.evaluate((e) => getComputedStyle(e).backgroundColor)), "vote button: Join stays the main button (pink) and the Vote button is the quieter one");
+  await page.setViewportSize({ width: 390, height: 844 }); await page.evaluate(() => window.scrollTo(0, 0));
+  await jump.click();
+  let last = -1; for (let i = 0; i < 30; i++) { await page.waitForTimeout(150); const y = await page.evaluate(() => window.scrollY); if (Math.abs(y - last) < 1) break; last = y; }
+  const topOfVote = await page.evaluate(() => Math.round(document.getElementById("vote").getBoundingClientRect().top));
+  check(topOfVote >= 0 && topOfVote <= 120, "vote button: clicking it scrolls down to the vote section", String(topOfVote));
+  check(await page.locator("#vote-h").isVisible() && (await page.evaluate(() => location.hash)) === "#vote", "vote button: the vote heading is on screen and the address ends in #vote");
+  await page.evaluate(() => window.scrollTo(0, 0));
+
   // percentages appear once there are enough votes
   page.api.tally = { cucumber: 10, watermelon: 6, mango: 4, guava: 0, plum: 0, lemon: 0 }; page.api.total = 20;
   await page.reload(); await page.waitForFunction(() => !document.getElementById("vote").classList.contains("few"));
