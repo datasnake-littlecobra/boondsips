@@ -27,6 +27,11 @@ Static site for **Boond** (salty sweet, by the drop) at boondsips.com.
 - Data lives in three locked-down tables (`boond_waitlist_signups`, `boond_flavor_votes`,
   `boond_stories`; schema in `supabase/migrations/`). Row-level security is on and the public roles
   have no access.
+- Flavor vote and suggestions (the "Flavor vote" section on the home page): each browser gets an anonymous random
+  voter id, so one browser has one vote per flavor and can take it back. The page shows live percentages once
+  there are at least 10 votes. Suggestions go to the private `boond_flavor_suggestions` table with status
+  `new`; they are never shown on the site. To read them with the sender email next to each one, open the
+  views `boond_flavor_suggestions_inbox` and `boond_stories_inbox` in the Supabase Table Editor.
 - `CONSENT_TEXT` in the function must match the consent text next to the checkboxes on the page.
 - Unsubscribe page: `/unsubscribe/?t=<token>`. Each signup has an unsubscribe token in the database.
 - Redeploy the function with the Supabase dashboard or CLI. It is not deployed by Cloudflare.

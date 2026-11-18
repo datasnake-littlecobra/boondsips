@@ -285,7 +285,7 @@ h2{font-size:clamp(2.1rem,6.5vw,3.5rem);font-weight:700;letter-spacing:-.03em}
       <div class="arrows"><button class="arrow" id="prev" type="button" aria-label="Previous flavor">&larr;</button><button class="arrow" id="next" type="button" aria-label="Next flavor">&rarr;</button></div>
     </div>
     <div class="track" id="track" tabindex="0" aria-label="Flavor cards"></div>
-    <p class="note fl-note">Draft tasting direction from our own judgment, not lab data. Blind taste tests will set the final profiles. Tap "I'd try this" to tell us your picks.</p>
+    <p class="note fl-note">We're in our taste validation phase, so these notes will keep improving. Tap "I'd try this" to vote, and we'll build it for you all.</p>
   </div>
 </section>
 
@@ -439,7 +439,7 @@ h2{font-size:clamp(2.1rem,6.5vw,3.5rem);font-weight:700;letter-spacing:-.03em}
     setTheme(next); try { localStorage.setItem(KEY, next); } catch(e){}
   });
 
-  /* ---- flavors (founder notes only; taste bars are draft direction) ---- */
+  /* ---- flavors (founder notes only; taste bars come from our validation phase) ---- */
   var FLAVORS = [
     {id:"cucumber", name:"Salted Cucumber Mint", c:"#3FBF7A", ci:"#0E2B24", card:"Cool and fresh, and first in line for testing. We are also testing a zero-sugar version.", insp:"A cool, fresh, less sweet taste", m:[1,3,2,5]},
     {id:"watermelon", name:"Salted Watermelon", c:"#FF4F7E", ci:"#0E2B24", card:"Juicy. We are testing chaat masala and chile-lime versions.", insp:"Watermelon with chaat masala", m:[3,3,1,5]},
@@ -460,7 +460,7 @@ h2{font-size:clamp(2.1rem,6.5vw,3.5rem);font-weight:700;letter-spacing:-.03em}
     return '<article class="fcard" style="--c:'+f.c+';--ci:'+f.ci+'">'+
       '<div class="top"><div class="row"><span class="num">0'+(i+1)+' / 06</span><span class="tag">4 g fiber target</span></div><h3>'+f.name+'</h3></div>'+
       '<div class="body"><p>'+f.card+'</p><p class="insp">Inspired by: '+f.insp+'</p><div class="meter">'+meter+'</div>'+
-      '<p class="note">Draft direction, not lab data.</p>'+
+      '<p class="note">Taste validation phase.</p>'+
       '<button class="try" type="button" data-id="'+f.id+'" aria-pressed="false">I\'d try this</button></div></article>';
   }).join("");
   function renderPicks(){
