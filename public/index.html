@@ -419,7 +419,7 @@ textarea.field{min-height:150px;resize:vertical}
       <label class="sr-only" for="heroEmail">Your email</label>
       <input class="field" id="heroEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
       <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond: taste test updates, launch news and our newsletter. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn" type="submit">Join waitlist</button>
       <p class="form-msg" role="status" aria-live="polite"></p>
     </form>
@@ -460,7 +460,7 @@ textarea.field{min-height:150px;resize:vertical}
         <label class="sr-only" for="suggestEmail">Your email (optional)</label>
         <input class="field" id="suggestEmail" name="email" type="email" autocomplete="email" placeholder="Your email (optional)">
         <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-        <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+        <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond: taste test updates, launch news and our newsletter. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
         <button class="btn btn--ghost" type="submit">Send my suggestion</button>
         <p class="consent">The box above is only needed if you add your email.</p>
         <p class="form-msg" role="status" aria-live="polite"></p>
@@ -593,7 +593,7 @@ textarea.field{min-height:150px;resize:vertical}
       <label class="sr-only" for="storyEmail">Your email (optional)</label>
       <input class="field" id="storyEmail" name="email" type="email" autocomplete="email" placeholder="Your email (optional)">
       <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-      <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+      <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond: taste test updates, launch news and our newsletter. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn btn--ghost" type="submit">Send my story</button>
       <p class="consent">We only use your story to plan flavors. We will not publish it or your name without asking you first. Tick the box above only if you added your email and want waitlist news too.</p>
       <p class="form-msg" role="status" aria-live="polite"></p>
@@ -613,7 +613,7 @@ textarea.field{min-height:150px;resize:vertical}
         <legend>Flavors I'd try (optional, these count as votes)</legend>
       </fieldset>
       <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+      <label class="consent-check"><input type="checkbox" name="consent" required><span>I agree to get emails from Boond: taste test updates, launch news and our newsletter. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
       <button class="btn" type="submit">Join the waitlist</button>
       <p class="consent">We collect your email, optional flavor picks and an optional story, only to plan the taste test and launch. To see or delete what we have about you, write to <a href="mailto:hello@boondsips.com">hello@boondsips.com</a>.</p>
       <p class="form-msg" role="status" aria-live="polite"></p>
@@ -651,7 +651,7 @@ textarea.field{min-height:150px;resize:vertical}
     <label class="sr-only" for="saveEmail">Your email</label>
     <input class="field" id="saveEmail" name="email" type="email" autocomplete="email" placeholder="Your email" required>
     <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-    <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
+    <label class="consent-check"><input type="checkbox" name="consent"><span>I agree to get emails from Boond: taste test updates, launch news and our newsletter. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.</span></label>
     <div class="sheet-row"><button class="btn" type="submit">Save my picks</button><button class="later" type="button" id="saveLater">No thanks</button></div>
     <p class="form-msg" role="status" aria-live="polite"></p>
   </form>
@@ -901,17 +901,17 @@ textarea.field{min-height:150px;resize:vertical}
         note = document.createElement("div"); note.id = id + "Joined"; note.className = "joined-note"; note.setAttribute("role","status");
         note.innerHTML = '<b class="jn-title"></b><p class="jn-main"></p>'
           + '<details><summary>What\'s in the email?</summary><ul>'
-          + '<li>A button to confirm that this address is yours.</li>'
-          + '<li>What Boond is: a salty-sweet drink we\'re still testing. Not for sale yet.</li>'
-          + '<li>What to expect once you confirm: a few emails about the taste test and the launch.</li>'
-          + '<li>A reply line that goes to a real inbox, and an unsubscribe link.</li></ul></details>'
+          + '<li>A welcome note and where Boond is right now: still testing, not for sale yet.</li>'
+          + '<li>A button to vote for a flavor.</li>'
+          + '<li>Links to Learn (free lessons) and our Instagram.</li>'
+          + '<li>A reply line that goes to a real inbox, and an unsubscribe link in every email.</li></ul></details>'
           + '<button type="button" class="later">Use a different email</button>';
         form.parentNode.insertBefore(note, form.nextSibling);
         note.querySelector("button").addEventListener("click", function(){ setJoined(false); });
       }
-      note.querySelector(".jn-title").textContent = justMailed ? "Check your email \u2709" : "You're on the list \u2713";
+      note.querySelector(".jn-title").textContent = "You're on the list \u2713";
       note.querySelector(".jn-main").textContent = justMailed
-        ? "We sent a confirmation email from hello@boondsips.com. Tap the button in it to finish joining. If it isn't there in a minute, check spam or Promotions. Your picks are saved."
+        ? "We just sent a welcome email from hello@boondsips.com. If it isn't there in a minute, check spam or Promotions. Your picks are saved."
         : "Thanks! We'll email you about the taste test. Your picks are saved.";
       form.hidden = joined; note.hidden = !joined;
     });
@@ -944,7 +944,7 @@ textarea.field{min-height:150px;resize:vertical}
     post({action:"signup", email:emailVal, consent:true, source:"vote", flavors:pickedIds(), voter:voter, website:saveForm.querySelector('input[name="website"]').value}).then(function(res){
       if (res.ok && res.body && res.body.ok) {
         msg.textContent = res.body.mailed === true
-          ? "Saved. Check your email and tap the button to confirm. It's from hello@boondsips.com. Check spam if it's not there in a minute."
+          ? "Saved. You're on the list. We sent a welcome email from hello@boondsips.com. Check spam if it's not there in a minute."
           : "Saved. You're on the list. Thank you!";
         setJoined(true, res.body.mailed); saveForm.reset();
         setTimeout(function(){ closeSheet(false); }, res.body.mailed === true ? 3500 : 1400);
