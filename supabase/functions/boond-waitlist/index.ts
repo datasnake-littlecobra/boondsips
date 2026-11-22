@@ -1,5 +1,5 @@
 // Boond waitlist endpoint (Supabase Edge Function, public, verify_jwt = false).
-// Actions: signup, vote, unvote, tally, suggest, story, unsubscribe. The service key is injected by
+// Actions: signup, confirm, vote, unvote, tally, suggest, story, unsubscribe. The service key is injected by
 // Supabase at runtime and never leaves it. Tables are boond_* with RLS on.
 //
 // Secrets: RESEND_API_KEY, MAIL_TEST_TO (owner's inbox, used until the postal address is set), BOOND_POSTAL_ADDRESS.
@@ -88,43 +88,42 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function welcomeMail(unsubUrl: string) {
+function confirmMail(confirmUrl: string, unsubUrl: string) {
   const address = Deno.env.get("BOOND_POSTAL_ADDRESS") ?? "";
-  const voteUrl = `${SITE}/#vote`;
   const text = [
-    "Thanks for joining the Boond list.",
+    "Please confirm your email for the Boond list.",
     "",
-    "Boond is a salty-sweet drink we're still testing. It isn't for sale yet.",
+    "Tap this link to finish joining:",
+    confirmUrl,
     "",
-    "What to expect: a few emails about the taste test and the launch.",
+    "Boond is a salty-sweet drink we're still testing. It isn't for sale yet. Once you confirm, we'll send you a few emails about the taste test and the launch.",
     "",
-    "Help us decide what to make first:",
-    voteUrl,
+    "If you didn't sign up, ignore this email. You won't be added.",
     "",
-    "Have a question, or a food memory that tastes like home? Just reply to this email. It goes to a real inbox.",
+    "Questions, or a food memory that tastes like home? Just reply. It goes to a real inbox.",
     "",
     "salty sweet, by the drop",
     "Boond",
     "",
     "--",
-    "You got this because you joined the Boond list at boondsips.com.",
+    "You got this because this address was entered on boondsips.com.",
     `Unsubscribe: ${unsubUrl}`,
     address,
   ].join("\n");
   const html = `<!doctype html><html><body style="margin:0;background:#FFF2D6;">
 <div style="max-width:520px;margin:0 auto;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;color:#3A2A16;font-size:16px;line-height:1.5;">
 <div style="font-size:30px;font-weight:700;color:#FF8A1F;">Boond</div>
-<p style="margin:18px 0 0;"><strong>Thanks for joining the list.</strong></p>
-<p>Boond is a salty-sweet drink we're still testing. It isn't for sale yet.</p>
-<p>What to expect: a few emails about the taste test and the launch.</p>
-<p><a href="${voteUrl}" style="display:inline-block;background:#FF8A1F;color:#3A2A16;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px;">Vote for a flavor</a></p>
-<p>Have a question, or a food memory that tastes like home? Just reply to this email. It goes to a real inbox.</p>
+<p style="margin:18px 0 0;"><strong>Please confirm your email for the Boond list.</strong></p>
+<p><a href="${confirmUrl}" style="display:inline-block;background:#FF8A1F;color:#3A2A16;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px;">Confirm my email</a></p>
+<p>Boond is a salty-sweet drink we're still testing. It isn't for sale yet. Once you confirm, we'll send you a few emails about the taste test and the launch.</p>
+<p>If you didn't sign up, ignore this email. You won't be added.</p>
+<p>Questions, or a food memory that tastes like home? Just reply. It goes to a real inbox.</p>
 <p style="margin-top:24px;">salty sweet, by the drop<br><strong>Boond</strong></p>
 <hr style="border:none;border-top:1px solid #3A2A1633;margin:28px 0 14px;">
-<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because you joined the Boond list at boondsips.com.
+<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because this address was entered on boondsips.com.
 <a href="${unsubUrl}" style="color:#3A2A16;">Unsubscribe</a><br>${esc(address)}</p>
 </div></body></html>`;
-  return { subject: "You're on the Boond list", text, html };
+  return { subject: "Confirm your email for the Boond list", text, html };
 }
 
 async function sendMail(to: string, mail: { subject: string; text: string; html: string }, unsubUrl: string) {
@@ -147,30 +146,46 @@ async function sendMail(to: string, mail: { subject: string; text: string; html:
 
 type MailStatus = "sent" | "skipped" | "failed";
 
-// Send the welcome email once per signup. Never lets an email problem fail the signup itself.
+const RESEND_COOLDOWN_MS = 60 * 60 * 1000; // at most one confirmation email per address per hour
+const DAILY_CAP = Number(Deno.env.get("MAIL_DAILY_CAP") ?? "60"); // keeps a bot from using up the sending quota
+
+// Send the confirmation email. Never lets an email problem fail the signup itself.
 // Logs only a reason, never an address.
-async function sendWelcome(signupId: string, email: string): Promise<MailStatus> {
+async function sendConfirm(signupId: string, email: string): Promise<MailStatus> {
   try {
     const gate = mailGate(email);
     if (gate !== "ok") {
       console.log("boond-waitlist mail skipped:", gate);
       return "skipped";
     }
+    const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
+    const { count, error: cerr } = await db
+      .from("boond_waitlist_signups")
+      .select("id", { count: "exact", head: true })
+      .gte("welcome_sent_at", dayAgo);
+    if (cerr) throw cerr;
+    if ((count ?? 0) >= DAILY_CAP) {
+      console.log("boond-waitlist mail skipped: daily_cap");
+      return "skipped";
+    }
     // Claim the send first, so two quick requests cannot both send.
+    const cooldown = new Date(Date.now() - RESEND_COOLDOWN_MS).toISOString();
     const { data: claimed, error } = await db
       .from("boond_waitlist_signups")
       .update({ welcome_sent_at: new Date().toISOString() })
       .eq("id", signupId)
-      .is("welcome_sent_at", null)
+      .is("confirmed_at", null)
       .is("unsubscribed_at", null)
-      .select("unsubscribe_token");
+      .or(`welcome_sent_at.is.null,welcome_sent_at.lt.${cooldown}`)
+      .select("unsubscribe_token, confirm_token");
     if (error || !claimed || claimed.length === 0) {
-      console.log("boond-waitlist mail skipped:", error ? "claim_error" : "already_sent_or_unsubscribed");
+      console.log("boond-waitlist mail skipped:", error ? "claim_error" : "confirmed_or_recent_or_unsubscribed");
       return "skipped";
     }
     const unsubUrl = `${SITE}/unsubscribe/?t=${claimed[0].unsubscribe_token}`;
+    const confirmUrl = `${SITE}/confirm/?t=${claimed[0].confirm_token}`;
     try {
-      await sendMail(email, welcomeMail(unsubUrl), unsubUrl);
+      await sendMail(email, confirmMail(confirmUrl, unsubUrl), unsubUrl);
     } catch (e) {
       await db.from("boond_waitlist_signups").update({ welcome_sent_at: null }).eq("id", signupId);
       throw e;
@@ -192,14 +207,14 @@ async function upsertSignup(
 ): Promise<{ id: string; mail: MailStatus }> {
   const id = await upsertSignupRow(email, flavors, source);
   await linkVotes(id, voter);
-  const mail = await sendWelcome(id, email);
+  const mail = await sendConfirm(id, email);
   return { id, mail };
 }
 
 async function upsertSignupRow(email: string, flavors: string[], source: string): Promise<string> {
   const now = new Date().toISOString();
   const find = () =>
-    db.from("boond_waitlist_signups").select("id, flavor_picks").eq("email", email).maybeSingle();
+    db.from("boond_waitlist_signups").select("id, flavor_picks, unsubscribed_at").eq("email", email).maybeSingle();
 
   let { data: existing, error } = await find();
   if (error) throw error;
@@ -217,6 +232,8 @@ async function upsertSignupRow(email: string, flavors: string[], source: string)
   }
 
   const merged = [...new Set([...(existing.flavor_picks ?? []), ...flavors])];
+  // Someone who unsubscribed must confirm again, so a stranger typing their address cannot resubscribe them.
+  const wasUnsubscribed = existing.unsubscribed_at !== null;
   const upd = await db
     .from("boond_waitlist_signups")
     .update({
@@ -224,6 +241,7 @@ async function upsertSignupRow(email: string, flavors: string[], source: string)
       unsubscribed_at: null,
       consent_text: CONSENT_TEXT,
       consented_at: now,
+      ...(wasUnsubscribed ? { confirmed_at: null, welcome_sent_at: null } : {}),
     })
     .eq("id", existing.id);
   if (upd.error) throw upd.error;
@@ -269,8 +287,29 @@ Deno.serve(async (req: Request) => {
         const source = typeof body.source === "string" && SOURCES.includes(body.source) ? body.source : "join";
         if (await tooMany("boond_waitlist_signups", 20)) return json({ error: "busy" }, 429, cors);
         const { mail } = await upsertSignup(email, cleanFlavors(body.flavors), source, cleanVoter(body.voter));
-        // "mailed" is true only when a welcome email really went out just now.
+        // "mailed" is true only when a confirmation email really went out just now.
         return json({ ok: true, mailed: mail === "sent" }, 200, cors);
+      }
+
+      case "confirm": {
+        const token = typeof body.token === "string" ? body.token.trim() : "";
+        if (!UUID_RE.test(token)) return json({ error: "invalid_token" }, 400, cors);
+        const { data: row, error: ferr } = await db
+          .from("boond_waitlist_signups")
+          .select("id, confirmed_at, unsubscribed_at")
+          .eq("confirm_token", token)
+          .maybeSingle();
+        if (ferr) throw ferr;
+        if (!row || row.unsubscribed_at) return json({ ok: true, confirmed: false }, 200, cors);
+        if (!row.confirmed_at) {
+          const { error } = await db
+            .from("boond_waitlist_signups")
+            .update({ confirmed_at: new Date().toISOString() })
+            .eq("id", row.id)
+            .is("confirmed_at", null);
+          if (error) throw error;
+        }
+        return json({ ok: true, confirmed: true }, 200, cors);
       }
 
       case "vote": {
