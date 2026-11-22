@@ -48,7 +48,6 @@ const newPage = async (width = 390, height = 844, colorScheme = "light") => {
     const body = JSON.parse(req.postData() || "{}");
     page.api.calls.push(body);
     if (body.action === "tally") return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, tally: page.api.tally, total: page.api.total }) });
-    if (body.action === "confirm") return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, confirmed: page.api.confirmed !== false }) });
     return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, mailed: page.api.mailed === true }) });
   });
   return page;
@@ -366,7 +365,7 @@ let hubItems = [];
   await voteRow(page, "mango").click();
   await page.waitForSelector("#saveSheet:not([hidden])", { timeout: 4000 });
   check((await page.locator("#saveTitle").innerText()) === "Save your picks" && await page.locator("#saveEmail").isVisible(), "sheet: opens after the first vote with one email field");
-  check((await page.locator("#saveSheet").innerText()).includes("unsubscribe anytime"), "sheet: shows the consent text");
+  check((await page.locator("#saveSheet").innerText()).includes("unsubscribe anytime") && (await page.locator("#saveSheet").innerText()).includes("our newsletter"), "sheet: shows the consent text (taste test updates, launch news, newsletter)");
   check(!/magic link|password|sign in/i.test(await page.locator("#saveSheet").innerText()), "sheet: promises no magic link or password (not available yet)");
   await page.waitForTimeout(600);
   const sb = await page.locator("#saveForm").boundingBox();
@@ -419,7 +418,7 @@ let hubItems = [];
   check(hs && hs.source === "hero" && UUID.test(hs.voter), "joined: the hero form sends the voter id too", JSON.stringify(hs));
   check(await page.locator("#heroFormJoined").isVisible(), "joined: joining through the hero form is remembered");
 
-  check(!/confirmation email|Check your email/.test(await page.locator("#heroFormJoined").innerText()), "email note: no 'we sent an email' claim when the server did not send one");
+  check(!/welcome email from/.test(await page.locator("#heroFormJoined").innerText()), "email note: no 'we sent an email' claim when the server did not send one");
   check(await page.locator("#heroFormJoined details").count() === 1 && (await page.locator("#heroFormJoined details").innerText()).includes("What's in the email?"), "email note: 'What's in the email?' is offered");
 
   // 5b. when the server really sent a welcome email, the page says so and lists what is in it
@@ -427,25 +426,13 @@ let hubItems = [];
   page.api.mailed = true;
   await page.fill("#heroEmail", "e@f.co"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(400);
   const sent = await page.locator("#heroFormJoined").innerText();
-  check(sent.includes("Check your email") && sent.includes("confirmation email from hello@boondsips.com") && sent.includes("spam"), "email note: says a confirmation email was sent, from where, and to check spam", sent);
+  check(sent.includes("You're on the list") && sent.includes("welcome email from hello@boondsips.com") && sent.includes("spam"), "email note: says a welcome email was sent, from where, and to check spam", sent);
   await page.locator("#heroFormJoined summary").click();
   const inside = await page.locator("#heroFormJoined details").innerText();
-  check(inside.includes("confirm that this address is yours") && inside.includes("Not for sale yet") && inside.includes("unsubscribe link"), "email note: the list shows what is in the email (confirm button, not for sale yet, unsubscribe link)", inside);
+  check(inside.includes("not for sale yet") && inside.includes("vote for a flavor") && inside.includes("Learn") && inside.includes("Instagram") && inside.includes("unsubscribe link"), "email note: the list shows what is in the email (status, vote, Learn and Instagram links, unsubscribe)", inside);
   check(await noSideScroll(page), "email note: no sideways scroll at 390px");
   await page.reload(); await ready(page);
-  check(!/confirmation email|Check your email/.test(await page.locator("#heroFormJoined").innerText()), "email note: after a reload it no longer claims an email was just sent");
-
-  // 5c. the confirm page (the button in the email lands here)
-  const T = "0b9f2c1e-3d4a-4b5c-8d6e-7f8091a2b3c4";
-  let cp = await newPage(390); await open(cp, "/confirm/?t=" + T); await cp.waitForTimeout(500);
-  check((await cp.locator("#msg").innerText()).includes("You're confirmed") && await cp.locator("#vote").isVisible(), "confirm page: a good link says you're confirmed and offers the vote");
-  const cc = cp.api.calls.find((c) => c.action === "confirm");
-  check(cc && cc.token === T, "confirm page: sends the token from the link", JSON.stringify(cc));
-  check(await noSideScroll(cp), "confirm page: no sideways scroll at 390px");
-  cp = await newPage(390); cp.api.confirmed = false; await open(cp, "/confirm/?t=" + T); await cp.waitForTimeout(500);
-  check((await cp.locator("#msg").innerText()).includes("no longer valid"), "confirm page: an old or unknown link says so");
-  cp = await newPage(390); await open(cp, "/confirm/?t=nope"); await cp.waitForTimeout(300);
-  check((await cp.locator("#msg").innerText()).includes("incomplete") && !cp.api.calls.some((c) => c.action === "confirm"), "confirm page: a broken link is explained and nothing is sent");
+  check(!/welcome email from/.test(await page.locator("#heroFormJoined").innerText()), "email note: after a reload it no longer claims an email was just sent");
 
   // 6. small phones and dark mode
   for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"]]) {

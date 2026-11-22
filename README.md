@@ -90,6 +90,6 @@ Never commit API tokens, passwords or keys. Put them in Cloudflare
 
 - Check the page at 400px wide and in both light and dark mode.
 
-## Confirmation email (double opt-in)
+## Welcome email
 
-A signup becomes "on the list" only after the person taps the link in the confirmation email (`/confirm/?t=<token>`, action `confirm`, column `confirmed_at`). The email is sent through Resend from hello@boondsips.com, at most once per address per hour and at most `MAIL_DAILY_CAP` (default 60) per day. Supabase secrets: `RESEND_API_KEY`, `MAIL_TEST_TO` (until the postal address is set, mail goes only to this address), `BOOND_POSTAL_ADDRESS` (footer address; setting it opens sending to everyone). Someone who unsubscribed must confirm again if they sign up again. Deploy order: apply the migration, merge the site (so `/confirm/` exists), then deploy the function.
+Joining counts immediately. A new signup gets one welcome email (where Boond is now, a vote button, links to Learn and Instagram, a reply line, and a one-tap unsubscribe), sent through Resend from hello@boondsips.com. It is sent at most once per address (`welcomed_at`) and at most `MAIL_DAILY_CAP` (default 60) per day. Joining again after unsubscribing puts the address back and sends the welcome email again. Supabase secrets: `RESEND_API_KEY`, `MAIL_TEST_TO` (until the postal address is set, mail goes only to this address), `BOOND_POSTAL_ADDRESS` (footer address; setting it opens sending to everyone). The checkbox wording lives in the site forms and in `CONSENT_TEXT` in the function; keep them identical.
