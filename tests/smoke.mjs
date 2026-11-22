@@ -48,7 +48,7 @@ const newPage = async (width = 390, height = 844, colorScheme = "light") => {
     const body = JSON.parse(req.postData() || "{}");
     page.api.calls.push(body);
     if (body.action === "tally") return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, tally: page.api.tally, total: page.api.total }) });
-    return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true }) });
+    return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, mailed: page.api.mailed === true }) });
   });
   return page;
 };
@@ -417,6 +417,22 @@ let hubItems = [];
   const hs = page.api.calls.find((c) => c.action === "signup");
   check(hs && hs.source === "hero" && UUID.test(hs.voter), "joined: the hero form sends the voter id too", JSON.stringify(hs));
   check(await page.locator("#heroFormJoined").isVisible(), "joined: joining through the hero form is remembered");
+
+  check(!(await page.locator("#heroFormJoined").innerText()).includes("just sent"), "email note: no 'we sent an email' claim when the server did not send one");
+  check(await page.locator("#heroFormJoined details").count() === 1 && (await page.locator("#heroFormJoined details").innerText()).includes("What's in the email?"), "email note: 'What's in the email?' is offered");
+
+  // 5b. when the server really sent a welcome email, the page says so and lists what is in it
+  page = await newPage(390); await open(page, "/"); await ready(page);
+  page.api.mailed = true;
+  await page.fill("#heroEmail", "e@f.co"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(400);
+  const sent = await page.locator("#heroFormJoined").innerText();
+  check(sent.includes("We just sent a welcome email from hello@boondsips.com") && sent.includes("spam"), "email note: says a welcome email was sent, from where, and to check spam", sent);
+  await page.locator("#heroFormJoined summary").click();
+  const inside = await page.locator("#heroFormJoined details").innerText();
+  check(inside.includes("not for sale yet") === false && inside.includes("Not for sale yet") && inside.includes("unsubscribe link"), "email note: the list shows what is in the email (not for sale yet, unsubscribe link)", inside);
+  check(await noSideScroll(page), "email note: no sideways scroll at 390px");
+  await page.reload(); await ready(page);
+  check(!(await page.locator("#heroFormJoined").innerText()).includes("just sent"), "email note: after a reload it no longer claims an email was just sent");
 
   // 6. small phones and dark mode
   for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"]]) {

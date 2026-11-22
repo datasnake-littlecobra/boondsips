@@ -77,11 +77,11 @@ const SITE = "https://boondsips.com";
 
 // Commercial email needs a postal address in the footer. Until BOOND_POSTAL_ADDRESS is set,
 // mail goes only to MAIL_TEST_TO (the owner's own inbox), so no real signup gets an email early.
-function mailAllowed(email: string): boolean {
-  if (!Deno.env.get("RESEND_API_KEY")) return false;
-  if (Deno.env.get("BOOND_POSTAL_ADDRESS")) return true;
+function mailGate(email: string): "ok" | "no_key" | "test_only" {
+  if (!Deno.env.get("RESEND_API_KEY")) return "no_key";
+  if (Deno.env.get("BOOND_POSTAL_ADDRESS")) return "ok";
   const test = (Deno.env.get("MAIL_TEST_TO") ?? "").trim().toLowerCase();
-  return test !== "" && test === email;
+  return test !== "" && test === email ? "ok" : "test_only";
 }
 
 function esc(s: string): string {
@@ -145,10 +145,17 @@ async function sendMail(to: string, mail: { subject: string; text: string; html:
   if (!res.ok) throw new Error(`resend_${res.status}`);
 }
 
+type MailStatus = "sent" | "skipped" | "failed";
+
 // Send the welcome email once per signup. Never lets an email problem fail the signup itself.
-async function sendWelcome(signupId: string, email: string) {
+// Logs only a reason, never an address.
+async function sendWelcome(signupId: string, email: string): Promise<MailStatus> {
   try {
-    if (!mailAllowed(email)) return;
+    const gate = mailGate(email);
+    if (gate !== "ok") {
+      console.log("boond-waitlist mail skipped:", gate);
+      return "skipped";
+    }
     // Claim the send first, so two quick requests cannot both send.
     const { data: claimed, error } = await db
       .from("boond_waitlist_signups")
@@ -157,7 +164,10 @@ async function sendWelcome(signupId: string, email: string) {
       .is("welcome_sent_at", null)
       .is("unsubscribed_at", null)
       .select("unsubscribe_token");
-    if (error || !claimed || claimed.length === 0) return;
+    if (error || !claimed || claimed.length === 0) {
+      console.log("boond-waitlist mail skipped:", error ? "claim_error" : "already_sent_or_unsubscribed");
+      return "skipped";
+    }
     const unsubUrl = `${SITE}/unsubscribe/?t=${claimed[0].unsubscribe_token}`;
     try {
       await sendMail(email, welcomeMail(unsubUrl), unsubUrl);
@@ -165,17 +175,25 @@ async function sendWelcome(signupId: string, email: string) {
       await db.from("boond_waitlist_signups").update({ welcome_sent_at: null }).eq("id", signupId);
       throw e;
     }
+    console.log("boond-waitlist mail sent");
+    return "sent";
   } catch (e) {
     console.error("boond-waitlist mail error:", e instanceof Error ? e.message : "unknown");
+    return "failed";
   }
 }
 
 // Emails are always stored lowercase, so equality is safe (and a unique index backs it).
-async function upsertSignup(email: string, flavors: string[], source: string, voter: string | null = null): Promise<string> {
+async function upsertSignup(
+  email: string,
+  flavors: string[],
+  source: string,
+  voter: string | null = null,
+): Promise<{ id: string; mail: MailStatus }> {
   const id = await upsertSignupRow(email, flavors, source);
   await linkVotes(id, voter);
-  await sendWelcome(id, email);
-  return id;
+  const mail = await sendWelcome(id, email);
+  return { id, mail };
 }
 
 async function upsertSignupRow(email: string, flavors: string[], source: string): Promise<string> {
@@ -250,8 +268,9 @@ Deno.serve(async (req: Request) => {
         if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
         const source = typeof body.source === "string" && SOURCES.includes(body.source) ? body.source : "join";
         if (await tooMany("boond_waitlist_signups", 20)) return json({ error: "busy" }, 429, cors);
-        await upsertSignup(email, cleanFlavors(body.flavors), source, cleanVoter(body.voter));
-        return json({ ok: true }, 200, cors); // same answer whether or not the email existed
+        const { mail } = await upsertSignup(email, cleanFlavors(body.flavors), source, cleanVoter(body.voter));
+        // "mailed" is true only when a welcome email really went out just now.
+        return json({ ok: true, mailed: mail === "sent" }, 200, cors);
       }
 
       case "vote": {
@@ -320,7 +339,7 @@ Deno.serve(async (req: Request) => {
           const email = cleanEmail(rawEmail);
           if (!email) return json({ error: "invalid_email" }, 400, cors);
           if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
-          signupId = await upsertSignup(email, [], "suggest", cleanVoter(body.voter));
+          signupId = (await upsertSignup(email, [], "suggest", cleanVoter(body.voter))).id;
         }
         const { error } = await db.from("boond_flavor_suggestions").insert({ suggestion: text, signup_id: signupId });
         if (error) throw error;
@@ -337,7 +356,7 @@ Deno.serve(async (req: Request) => {
           const email = cleanEmail(rawEmail);
           if (!email) return json({ error: "invalid_email" }, 400, cors);
           if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
-          signupId = await upsertSignup(email, [], "story", cleanVoter(body.voter));
+          signupId = (await upsertSignup(email, [], "story", cleanVoter(body.voter))).id;
         }
         const { error } = await db.from("boond_stories").insert({ story, signup_id: signupId });
         if (error) throw error;

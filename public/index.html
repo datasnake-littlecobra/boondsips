@@ -148,6 +148,9 @@ textarea.field{min-height:150px;resize:vertical}
 .joined-note{max-width:520px;border:3px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);padding:18px 20px;box-shadow:5px 5px 0 var(--shadow)}
 .joined-note b{font:700 1.35rem/1.2 "Fredoka",sans-serif}
 .joined-note p{margin:6px 0 4px;color:var(--muted);font-size:.98rem}
+.joined-note details{margin:8px 0 6px;font-size:.95rem}
+.joined-note summary{cursor:pointer;font-weight:700}
+.joined-note ul{margin:6px 0 0;padding-left:1.2em;color:var(--muted)}
 @media (prefers-reduced-motion: reduce){.sheet-card{animation:none}}
 .vote{padding:80px 0 56px}
 .vote .lede{max-width:640px;margin-top:22px}
@@ -887,7 +890,7 @@ textarea.field{min-height:150px;resize:vertical}
   renderVote(); loadTally();
 
   /* ---- remember this browser: "you're on the list", and the save-your-picks sheet (no email is stored in the browser) ---- */
-  var joined = false, sheetShown = false, SHEET_PAUSE = 14 * 24 * 3600 * 1000;
+  var joined = false, justMailed = false, sheetShown = false, SHEET_PAUSE = 14 * 24 * 3600 * 1000;
   try { joined = localStorage.getItem("boondJoined") === "1"; } catch(e){}
   function sheetPaused(){ try { var t = parseInt(localStorage.getItem("boondSheetDismissed") || "0", 10); return !!t && Date.now() - t < SHEET_PAUSE; } catch(e){ return false; } }
   function renderJoined(){
@@ -896,15 +899,24 @@ textarea.field{min-height:150px;resize:vertical}
       var note = $(id + "Joined");
       if (!note) {
         note = document.createElement("div"); note.id = id + "Joined"; note.className = "joined-note"; note.setAttribute("role","status");
-        note.innerHTML = '<b>You\'re on the list \u2713</b><p>Thanks! We\'ll email you about the taste test. Your picks are saved.</p><button type="button" class="later">Use a different email</button>';
+        note.innerHTML = '<b>You\'re on the list \u2713</b><p class="jn-main"></p>'
+          + '<details><summary>What\'s in the email?</summary><ul>'
+          + '<li>A thank-you, and what Boond is: a salty-sweet drink we\'re still testing. Not for sale yet.</li>'
+          + '<li>What to expect: a few emails about the taste test and the launch.</li>'
+          + '<li>A button to vote for a flavor, and a reply line that goes to a real inbox.</li>'
+          + '<li>An unsubscribe link in every email.</li></ul></details>'
+          + '<button type="button" class="later">Use a different email</button>';
         form.parentNode.insertBefore(note, form.nextSibling);
         note.querySelector("button").addEventListener("click", function(){ setJoined(false); });
       }
+      note.querySelector(".jn-main").textContent = justMailed
+        ? "We just sent a welcome email from hello@boondsips.com. If it isn't there in a minute, check spam or Promotions. Your picks are saved."
+        : "Thanks! We'll email you about the taste test. Your picks are saved.";
       form.hidden = joined; note.hidden = !joined;
     });
   }
-  function setJoined(v){
-    joined = !!v;
+  function setJoined(v, mailed){
+    joined = !!v; justMailed = joined && mailed === true;
     try { if (joined) localStorage.setItem("boondJoined","1"); else localStorage.removeItem("boondJoined"); } catch(e){}
     renderJoined();
   }
@@ -930,9 +942,11 @@ textarea.field{min-height:150px;resize:vertical}
     btn.disabled = true;
     post({action:"signup", email:emailVal, consent:true, source:"vote", flavors:pickedIds(), voter:voter, website:saveForm.querySelector('input[name="website"]').value}).then(function(res){
       if (res.ok && res.body && res.body.ok) {
-        msg.textContent = "Saved. You're on the list. Thank you!";
-        setJoined(true); saveForm.reset();
-        setTimeout(function(){ closeSheet(false); }, 1400);
+        msg.textContent = res.body.mailed === true
+          ? "Saved. We sent a welcome email from hello@boondsips.com. Check spam if it's not there in a minute."
+          : "Saved. You're on the list. Thank you!";
+        setJoined(true, res.body.mailed); saveForm.reset();
+        setTimeout(function(){ closeSheet(false); }, res.body.mailed === true ? 3500 : 1400);
       } else msg.textContent = ERR[res.body && res.body.error] || GENERIC;
     }).catch(function(){ msg.textContent = GENERIC; }).then(function(){ btn.disabled = false; });
   });
@@ -981,7 +995,7 @@ textarea.field{min-height:150px;resize:vertical}
         if (res.ok && res.body && res.body.ok) {
           msg.textContent = id === "storyForm" ? "Thank you for sharing your story." : "You're on the list. Thank you!";
           form.reset(); renderPicks();
-          if (id !== "storyForm" || payload.email) setJoined(true);
+          if (id !== "storyForm" || payload.email) setJoined(true, res.body.mailed);
         } else {
           msg.textContent = ERR[res.body && res.body.error] || GENERIC;
         }
