@@ -6,7 +6,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const FLAVORS = ["cucumber", "watermelon", "mango", "guava", "plum", "lemon"];
-const SOURCES = ["hero", "story", "join", "suggest"];
+const SOURCES = ["hero", "story", "join", "suggest", "vote"];
 const CONSENT_TEXT =
   "I agree to get emails from Boond about the taste test and launch. I can unsubscribe anytime with the link in any email or by writing to hello@boondsips.com.";
 
@@ -53,8 +53,29 @@ function cleanFlavors(v: unknown): string[] {
   return [...new Set(v.filter((x) => typeof x === "string" && FLAVORS.includes(x)))];
 }
 
+function cleanVoter(v: unknown): string | null {
+  return typeof v === "string" && UUID_RE.test(v) ? v.toLowerCase() : null;
+}
+
+// Attach this browser's anonymous votes to the signup, so the owner can see who voted for what.
+async function linkVotes(signupId: string, voter: string | null) {
+  if (!voter) return;
+  const { error } = await db
+    .from("boond_flavor_votes")
+    .update({ signup_id: signupId })
+    .eq("voter_token", voter)
+    .is("signup_id", null);
+  if (error) throw error;
+}
+
 // Emails are always stored lowercase, so equality is safe (and a unique index backs it).
-async function upsertSignup(email: string, flavors: string[], source: string): Promise<string> {
+async function upsertSignup(email: string, flavors: string[], source: string, voter: string | null = null): Promise<string> {
+  const id = await upsertSignupRow(email, flavors, source);
+  await linkVotes(id, voter);
+  return id;
+}
+
+async function upsertSignupRow(email: string, flavors: string[], source: string): Promise<string> {
   const now = new Date().toISOString();
   const find = () =>
     db.from("boond_waitlist_signups").select("id, flavor_picks").eq("email", email).maybeSingle();
@@ -126,7 +147,7 @@ Deno.serve(async (req: Request) => {
         if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
         const source = typeof body.source === "string" && SOURCES.includes(body.source) ? body.source : "join";
         if (await tooMany("boond_waitlist_signups", 20)) return json({ error: "busy" }, 429, cors);
-        await upsertSignup(email, cleanFlavors(body.flavors), source);
+        await upsertSignup(email, cleanFlavors(body.flavors), source, cleanVoter(body.voter));
         return json({ ok: true }, 200, cors); // same answer whether or not the email existed
       }
 
@@ -138,9 +159,19 @@ Deno.serve(async (req: Request) => {
         if (await tooMany("boond_flavor_votes", 60)) return json({ error: "busy" }, 429, cors);
         if (voter) {
           // one anonymous vote per browser per flavor; repeats change nothing
+          const { data: linked, error: lerr } = await db
+            .from("boond_flavor_votes")
+            .select("signup_id")
+            .eq("voter_token", voter)
+            .not("signup_id", "is", null)
+            .limit(1);
+          if (lerr) throw lerr;
           const { error } = await db
             .from("boond_flavor_votes")
-            .upsert({ flavor: body.flavor, voter_token: voter }, { onConflict: "voter_token,flavor", ignoreDuplicates: true });
+            .upsert(
+              { flavor: body.flavor, voter_token: voter, signup_id: linked?.[0]?.signup_id ?? null },
+              { onConflict: "voter_token,flavor", ignoreDuplicates: true },
+            );
           if (error) throw error;
         } else {
           const { error } = await db.from("boond_flavor_votes").insert({ flavor: body.flavor });
@@ -186,7 +217,7 @@ Deno.serve(async (req: Request) => {
           const email = cleanEmail(rawEmail);
           if (!email) return json({ error: "invalid_email" }, 400, cors);
           if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
-          signupId = await upsertSignup(email, [], "suggest");
+          signupId = await upsertSignup(email, [], "suggest", cleanVoter(body.voter));
         }
         const { error } = await db.from("boond_flavor_suggestions").insert({ suggestion: text, signup_id: signupId });
         if (error) throw error;
@@ -203,7 +234,7 @@ Deno.serve(async (req: Request) => {
           const email = cleanEmail(rawEmail);
           if (!email) return json({ error: "invalid_email" }, 400, cors);
           if (body.consent !== true) return json({ error: "consent_required" }, 400, cors);
-          signupId = await upsertSignup(email, [], "story");
+          signupId = await upsertSignup(email, [], "story", cleanVoter(body.voter));
         }
         const { error } = await db.from("boond_stories").insert({ story, signup_id: signupId });
         if (error) throw error;

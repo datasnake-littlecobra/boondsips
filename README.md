@@ -32,6 +32,11 @@ Static site for **Boond** (salty sweet, by the drop) at boondsips.com.
   there are at least 10 votes. Suggestions go to the private `boond_flavor_suggestions` table with status
   `new`; they are never shown on the site. To read them with the sender email next to each one, open the
   views `boond_flavor_suggestions_inbox` and `boond_stories_inbox` in the Supabase Table Editor.
+- Save your picks: the first vote on a visit opens a small "Save your picks" sheet (one email field, the same
+  consent text). The sign-up is recorded with source `vote` and the browser's anonymous votes are attached to it,
+  so the Supabase table shows who voted for what. The browser only remembers a "joined" flag
+  (`boondJoined`), never the email, and "Use a different email" clears it. No magic link or password yet;
+  that needs an email sending service.
 - `CONSENT_TEXT` in the function must match the consent text next to the checkboxes on the page.
 - Unsubscribe page: `/unsubscribe/?t=<token>`. Each signup has an unsubscribe token in the database.
 - Redeploy the function with the Supabase dashboard or CLI. It is not deployed by Cloudflare.

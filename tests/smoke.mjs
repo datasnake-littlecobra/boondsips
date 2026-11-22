@@ -267,6 +267,7 @@ let hubItems = [];
 {
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const page = await newPage(390);
+  await page.addInitScript(() => { try { localStorage.setItem("boondSheetDismissed", String(Date.now())); } catch (e) {} }); // keep the save sheet out of the way here
   check((await open(page, "/")) === 200, "vote: home loads");
   await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
   check(await page.locator(".menu nav a[href='#vote']").count() === 1, "vote: menu has a Vote link");
@@ -349,6 +350,83 @@ let hubItems = [];
   const dark = await newPage(390, 844, "dark"); await open(dark, "/"); await dark.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
   for (const w of [360, 390, 430]) { await dark.setViewportSize({ width: w, height: 844 }); check(await noSideScroll(dark), `vote (dark): no sideways scroll at ${w}px`); }
   check(page.errors.length === 0 && dark.errors.length === 0, "vote: no console errors", page.errors.concat(dark.errors).join(" | "));
+}
+
+// ---------- Save your picks sheet and "you're on the list" memory ----------
+{
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const voteRow = (p, id) => p.locator(`#vlist .vrow[data-id=${id}]`);
+  const ready = (p) => p.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+
+  // 1. the first vote opens the sheet; "No thanks" closes it and it stays away
+  let page = await newPage(390);
+  await open(page, "/"); await ready(page);
+  check(await page.locator("#saveSheet").isHidden(), "sheet: hidden before anyone votes");
+  await voteRow(page, "mango").click();
+  await page.waitForSelector("#saveSheet:not([hidden])", { timeout: 4000 });
+  check((await page.locator("#saveTitle").innerText()) === "Save your picks" && await page.locator("#saveEmail").isVisible(), "sheet: opens after the first vote with one email field");
+  check((await page.locator("#saveSheet").innerText()).includes("unsubscribe anytime"), "sheet: shows the consent text");
+  check(!/magic link|password|sign in/i.test(await page.locator("#saveSheet").innerText()), "sheet: promises no magic link or password (not available yet)");
+  await page.waitForTimeout(600);
+  const sb = await page.locator("#saveForm").boundingBox();
+  check(sb && sb.x >= 0 && sb.x + sb.width <= 390 && sb.y >= 0, "sheet: fits inside a 390px screen", JSON.stringify(sb));
+  await page.click("#saveLater");
+  check(await page.locator("#saveSheet").isHidden(), "sheet: 'No thanks' closes it");
+  await voteRow(page, "guava").click(); await page.waitForTimeout(1000);
+  check(await page.locator("#saveSheet").isHidden(), "sheet: does not come back for the next vote");
+  await page.reload(); await ready(page); await voteRow(page, "plum").click(); await page.waitForTimeout(1000);
+  check(await page.locator("#saveSheet").isHidden(), "sheet: stays closed after a reload (dismissed on this device)");
+  check(page.errors.length === 0, "sheet: no console errors", page.errors.join(" | "));
+
+  // 2. Escape closes it, and a vote from the join form never opens it
+  page = await newPage(390); await open(page, "/"); await ready(page);
+  await page.check("#joinPicks input[value=lemon]"); await page.waitForTimeout(1000);
+  check(await page.locator("#saveSheet").isHidden(), "sheet: a flavor ticked in the join form does not open it");
+  await voteRow(page, "watermelon").click(); await page.waitForSelector("#saveSheet:not([hidden])");
+  await page.keyboard.press("Escape");
+  check(await page.locator("#saveSheet").isHidden(), "sheet: Escape closes it");
+
+  // 3. saving: validation, payload, and the remembered state
+  page = await newPage(390); await open(page, "/"); await ready(page);
+  await voteRow(page, "mango").click(); await page.waitForSelector("#saveSheet:not([hidden])");
+  const m = () => page.textContent("#saveForm .form-msg");
+  await page.click("#saveForm button[type=submit]"); check((await m()).includes("valid email"), "sheet: empty email is refused");
+  await page.fill("#saveEmail", "a@b.co"); await page.click("#saveForm button[type=submit]");
+  check((await m()).includes("tick the box") && !page.api.calls.some((c) => c.action === "signup"), "sheet: no consent, nothing is sent");
+  await page.check("#saveForm input[name=consent]"); await page.click("#saveForm button[type=submit]"); await page.waitForTimeout(400);
+  const su = page.api.calls.find((c) => c.action === "signup");
+  check(su && su.email === "a@b.co" && su.consent === true && su.source === "vote" && su.flavors.includes("mango") && UUID.test(su.voter) && su.website === "", "sheet: sends the email, consent, source 'vote', the picks and the anonymous voter id", JSON.stringify(su));
+  const vt = page.api.calls.find((c) => c.action === "vote");
+  check(vt && vt.voter === su.voter, "sheet: the sign-up and the vote use the same voter id");
+  await page.waitForSelector("#saveSheet", { state: "hidden", timeout: 4000 });
+  check(await page.locator("#heroFormJoined").isVisible() && await page.locator("#heroForm").isHidden(), "joined: the hero form is replaced by 'You're on the list'");
+  check((await page.locator("#joinFormJoined").innerText()).includes("You're on the list") && await page.locator("#joinForm").isHidden(), "joined: the join form is replaced too");
+  check(!(await page.evaluate(() => JSON.stringify(Object.assign({}, localStorage)))).includes("a@b.co"), "joined: the email address is not kept in the browser");
+
+  // 4. the memory survives a reload, no sheet for a joined browser, and it can be undone
+  await page.reload(); await ready(page);
+  check(await page.locator("#heroFormJoined").isVisible(), "joined: still remembered after a reload");
+  await voteRow(page, "guava").click(); await page.waitForTimeout(1000);
+  check(await page.locator("#saveSheet").isHidden(), "joined: no save sheet for someone who already joined");
+  await page.locator("#heroFormJoined .later").click();
+  check(await page.locator("#heroForm").isVisible() && await page.locator("#heroFormJoined").isHidden(), "joined: 'Use a different email' brings the form back");
+
+  // 5. the hero form also marks the browser as joined, and sends the voter id
+  page = await newPage(390); await open(page, "/"); await ready(page);
+  await page.fill("#heroEmail", "c@d.co"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(400);
+  const hs = page.api.calls.find((c) => c.action === "signup");
+  check(hs && hs.source === "hero" && UUID.test(hs.voter), "joined: the hero form sends the voter id too", JSON.stringify(hs));
+  check(await page.locator("#heroFormJoined").isVisible(), "joined: joining through the hero form is remembered");
+
+  // 6. small phones and dark mode
+  for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"]]) {
+    const q = await newPage(w, h, scheme); await open(q, "/"); await ready(q);
+    await voteRow(q, "mango").click(); await q.waitForSelector("#saveSheet:not([hidden])"); await q.waitForTimeout(600); // let the slide-up finish
+    const bx = await q.locator("#saveForm").boundingBox();
+    check(bx && bx.x >= 0 && bx.x + bx.width <= w && bx.y >= 0 && bx.y + bx.height <= h, `sheet: fits the screen at ${w}x${h} (${scheme})`, JSON.stringify(bx));
+    check(await noSideScroll(q), `sheet: no sideways scroll at ${w}px (${scheme})`);
+    check(q.errors.length === 0, `sheet: no console errors at ${w}px (${scheme})`, q.errors.join(" | "));
+  }
 }
 
 // ---------- Config ----------
