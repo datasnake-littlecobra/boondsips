@@ -2,6 +2,8 @@
 // Actions: signup, vote, unvote, tally, suggest, story, unsubscribe. The service key is injected by
 // Supabase at runtime and never leaves it. Tables are boond_* with RLS on.
 //
+// Secrets: RESEND_API_KEY, MAIL_TEST_TO (owner's inbox, used until the postal address is set), BOOND_POSTAL_ADDRESS.
+//
 // Keep CONSENT_TEXT identical to the text shown next to the checkboxes on the site.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -68,10 +70,111 @@ async function linkVotes(signupId: string, voter: string | null) {
   if (error) throw error;
 }
 
+// ---- Email (Resend). Sent from hello@boondsips.com. The key lives only in Supabase secrets. ----
+const MAIL_FROM = "Boond <hello@boondsips.com>";
+const MAIL_REPLY_TO = "hello@boondsips.com";
+const SITE = "https://boondsips.com";
+
+// Commercial email needs a postal address in the footer. Until BOOND_POSTAL_ADDRESS is set,
+// mail goes only to MAIL_TEST_TO (the owner's own inbox), so no real signup gets an email early.
+function mailAllowed(email: string): boolean {
+  if (!Deno.env.get("RESEND_API_KEY")) return false;
+  if (Deno.env.get("BOOND_POSTAL_ADDRESS")) return true;
+  const test = (Deno.env.get("MAIL_TEST_TO") ?? "").trim().toLowerCase();
+  return test !== "" && test === email;
+}
+
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function welcomeMail(unsubUrl: string) {
+  const address = Deno.env.get("BOOND_POSTAL_ADDRESS") ?? "";
+  const voteUrl = `${SITE}/#vote`;
+  const text = [
+    "Thanks for joining the Boond list.",
+    "",
+    "Boond is a salty-sweet drink we're still testing. It isn't for sale yet.",
+    "",
+    "What to expect: a few emails about the taste test and the launch.",
+    "",
+    "Help us decide what to make first:",
+    voteUrl,
+    "",
+    "Have a question, or a food memory that tastes like home? Just reply to this email. It goes to a real inbox.",
+    "",
+    "salty sweet, by the drop",
+    "Boond",
+    "",
+    "--",
+    "You got this because you joined the Boond list at boondsips.com.",
+    `Unsubscribe: ${unsubUrl}`,
+    address,
+  ].join("\n");
+  const html = `<!doctype html><html><body style="margin:0;background:#FFF2D6;">
+<div style="max-width:520px;margin:0 auto;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;color:#3A2A16;font-size:16px;line-height:1.5;">
+<div style="font-size:30px;font-weight:700;color:#FF8A1F;">Boond</div>
+<p style="margin:18px 0 0;"><strong>Thanks for joining the list.</strong></p>
+<p>Boond is a salty-sweet drink we're still testing. It isn't for sale yet.</p>
+<p>What to expect: a few emails about the taste test and the launch.</p>
+<p><a href="${voteUrl}" style="display:inline-block;background:#FF8A1F;color:#3A2A16;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px;">Vote for a flavor</a></p>
+<p>Have a question, or a food memory that tastes like home? Just reply to this email. It goes to a real inbox.</p>
+<p style="margin-top:24px;">salty sweet, by the drop<br><strong>Boond</strong></p>
+<hr style="border:none;border-top:1px solid #3A2A1633;margin:28px 0 14px;">
+<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because you joined the Boond list at boondsips.com.
+<a href="${unsubUrl}" style="color:#3A2A16;">Unsubscribe</a><br>${esc(address)}</p>
+</div></body></html>`;
+  return { subject: "You're on the Boond list", text, html };
+}
+
+async function sendMail(to: string, mail: { subject: string; text: string; html: string }, unsubUrl: string) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: MAIL_FROM,
+      to: [to],
+      reply_to: MAIL_REPLY_TO,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
+      headers: { "List-Unsubscribe": `<${unsubUrl}>, <mailto:${MAIL_REPLY_TO}?subject=unsubscribe>` },
+    }),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`resend_${res.status}`);
+}
+
+// Send the welcome email once per signup. Never lets an email problem fail the signup itself.
+async function sendWelcome(signupId: string, email: string) {
+  try {
+    if (!mailAllowed(email)) return;
+    // Claim the send first, so two quick requests cannot both send.
+    const { data: claimed, error } = await db
+      .from("boond_waitlist_signups")
+      .update({ welcome_sent_at: new Date().toISOString() })
+      .eq("id", signupId)
+      .is("welcome_sent_at", null)
+      .is("unsubscribed_at", null)
+      .select("unsubscribe_token");
+    if (error || !claimed || claimed.length === 0) return;
+    const unsubUrl = `${SITE}/unsubscribe/?t=${claimed[0].unsubscribe_token}`;
+    try {
+      await sendMail(email, welcomeMail(unsubUrl), unsubUrl);
+    } catch (e) {
+      await db.from("boond_waitlist_signups").update({ welcome_sent_at: null }).eq("id", signupId);
+      throw e;
+    }
+  } catch (e) {
+    console.error("boond-waitlist mail error:", e instanceof Error ? e.message : "unknown");
+  }
+}
+
 // Emails are always stored lowercase, so equality is safe (and a unique index backs it).
 async function upsertSignup(email: string, flavors: string[], source: string, voter: string | null = null): Promise<string> {
   const id = await upsertSignupRow(email, flavors, source);
   await linkVotes(id, voter);
+  await sendWelcome(id, email);
   return id;
 }
 
