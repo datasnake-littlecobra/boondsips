@@ -581,6 +581,28 @@ let hubItems = [];
   }
 }
 
+// ---------- Demo footers follow the theme ----------
+{
+  const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const read = (p) => p.evaluate(() => { const f = document.querySelector(".foot"); const g = (q) => getComputedStyle(f.querySelector(q)); return { bg: getComputedStyle(f).backgroundColor, ink: getComputedStyle(f).color, muted: g("p").color, link: g(".foot-links a").color, pressedText: g("[aria-pressed=true] span").color, pressedFill: g("[aria-pressed=true]").backgroundColor }; });
+  for (const demo of ["demo-theme", "demo-type"]) {
+    const light = await newPage(390, 844, "dark"); await open(light, "/" + demo + "/");
+    await light.locator(".foot [data-theme-choice=light]").scrollIntoViewIfNeeded(); await light.locator(".foot [data-theme-choice=light]").click();
+    const L = await read(light);
+    check(L.bg === "rgb(255, 210, 63)", `${demo}: Light turns the footer yellow, even on a dark system`, L.bg);
+    check(ratio(L.ink, L.bg) >= 4.5 && ratio(L.muted, L.bg) >= 4.5 && ratio(L.link, L.bg) >= 4.5, `${demo}: footer text and links are readable in Light`, JSON.stringify(L));
+    check(ratio(L.pressedText, L.pressedFill) >= 4.5, `${demo}: the pressed theme button is readable in the Light footer`, `${L.pressedText} on ${L.pressedFill}`);
+    await light.locator(".foot [data-theme-choice=dark]").click();
+    const D = await read(light);
+    check(D.bg === "rgb(58, 42, 22)" && ratio(D.ink, D.bg) >= 4.5 && ratio(D.muted, D.bg) >= 4.5 && ratio(D.pressedText, D.pressedFill) >= 4.5, `${demo}: Dark turns the footer brown and keeps it readable`, JSON.stringify(D));
+    await light.locator(".foot [data-theme-choice=auto]").click();
+    check((await read(light)).bg === "rgb(58, 42, 22)", `${demo}: Auto follows a dark system with the brown footer`);
+    const auto = await newPage(390, 844, "light"); await open(auto, "/" + demo + "/");
+    check((await read(auto)).bg === "rgb(255, 210, 63)" && await noSideScroll(auto), `${demo}: Auto follows a light system with the yellow footer, no sideways scroll`);
+  }
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
