@@ -454,6 +454,133 @@ let hubItems = [];
   check(donate === "", "donateUrl is empty by default", JSON.stringify(donate));
 }
 
+// ---------- Theme demo: Auto / Light / Dark switch (the demo page only; the real page is untouched) ----------
+{
+  const bg = (p) => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const LIGHT = "rgb(255, 242, 214)", DARK = "rgb(30, 22, 12)";
+  const themeAttr = (p) => p.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  const pressed = (p, scope) => p.evaluate((sc) => [...document.querySelectorAll(sc + " [data-theme-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.getAttribute("data-theme-choice")).join(","), scope);
+  const file = fs.readFileSync(path.join(ROOT, "demo-theme", "index.html"), "utf8");
+  check(file.indexOf('localStorage.getItem("boondTheme")') < file.indexOf("<style>"), "theme demo: the saved theme is applied before the styles load (no flash)");
+  check(/name="robots" content="noindex"/.test(file), "theme demo: not indexed by search engines");
+
+  let page = await newPage(390, 844, "light");
+  check(await open(page, "/demo-theme/") === 200 && page.errors.length === 0, "theme demo: loads without errors", page.errors.join(" | "));
+  check(await page.locator(".demo-strip").isVisible(), "theme demo: says it is a demo and nothing is saved");
+  check(await bg(page) === LIGHT && await pressed(page, ".foot") === "auto", "theme demo: Auto follows a light system", await bg(page));
+  await page.emulateMedia({ colorScheme: "dark" });
+  check(await bg(page) === DARK, "theme demo: Auto follows the system when it switches to dark", await bg(page));
+  await page.emulateMedia({ colorScheme: "light" });
+
+  // Dark chosen in the footer, on a light system
+  await page.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded();
+  await page.locator(".foot [data-theme-choice=dark]").click();
+  check(await themeAttr(page) === "dark" && await bg(page) === DARK, "theme demo: Dark overrides a light system");
+  check(await pressed(page, ".foot") === "dark" && await pressed(page, ".menu") === "dark", "theme demo: the footer and menu controls stay in sync");
+  check(await page.evaluate(() => localStorage.getItem("boondTheme")) === "dark", "theme demo: the choice is remembered in this browser");
+  await page.reload(); await page.waitForLoadState("load");
+  check(await themeAttr(page) === "dark" && await bg(page) === DARK, "theme demo: the choice survives a reload");
+  const pb = await page.evaluate(() => { const b = document.querySelector(".foot [data-theme-choice=dark]"); const c = getComputedStyle(b.querySelector("span")).color; return [c, getComputedStyle(b).backgroundColor]; });
+  check(pb[0] !== pb[1], "theme demo: the selected button's text is readable against its fill", pb.join(" on "));
+
+  // Light chosen on a dark system, from the menu
+  page = await newPage(390, 844, "dark"); await open(page, "/demo-theme/");
+  check(await bg(page) === DARK && await pressed(page, ".menu") === "auto", "theme demo: Auto follows a dark system");
+  await page.click("#burger"); await page.waitForTimeout(500);
+  const box = await page.locator(".menu .theme-row").boundingBox();
+  check(box && box.x >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844, "theme demo: the control fits inside the open menu at 390px", JSON.stringify(box));
+  await page.locator(".menu [data-theme-choice=light]").click();
+  check(await themeAttr(page) === "light" && await bg(page) === LIGHT, "theme demo: Light overrides a dark system (chosen in the menu)");
+  await page.locator(".menu [data-theme-choice=auto]").click();
+  check(await themeAttr(page) === null && await bg(page) === DARK && await page.evaluate(() => localStorage.getItem("boondTheme")) === null, "theme demo: Auto removes the override and follows the system again");
+
+  // Nothing is saved, and the real page's memory is untouched
+  page = await newPage(390, 844, "light"); await open(page, "/demo-theme/");
+  await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  await page.fill("#heroEmail", "demo@example.com"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(500);
+  check(await page.locator("#heroFormJoined").isVisible(), "theme demo: the form still behaves like the real one");
+  check(!page.api.calls.some((c) => c.action === "signup"), "theme demo: the signup never reaches the server");
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  check(keys.every((k) => k === "boondTheme" || k.startsWith("demo_")), "theme demo: the demo does not touch the real page's saved state", keys.join(","));
+  check(await page.evaluate(() => [...document.querySelectorAll("a[href]")].filter((a) => /^learn\//.test(a.getAttribute("href"))).length) === 0, "theme demo: links to other pages are absolute");
+
+  // Fit on small phones, both themes
+  for (const [w, h, scheme] of [[360, 640, "light"], [360, 640, "dark"], [390, 844, "dark"]]) {
+    const q = await newPage(w, h, scheme); await open(q, "/demo-theme/");
+    check(await noSideScroll(q), `theme demo: no sideways scroll at ${w}px (${scheme})`);
+  }
+}
+
+// ---------- Type demo: Today / New type / Calmer, same content (demo page only; the real page is untouched) ----------
+{
+  const file = fs.readFileSync(path.join(ROOT, "demo-type", "index.html"), "utf8");
+  const real = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  check(file.indexOf('localStorage.getItem("demo_boondStyle")') < file.indexOf("<style>"), "type demo: the saved style is applied before the styles load (no flash)");
+  check(/name="robots" content="noindex"/.test(file), "type demo: not indexed by search engines");
+  // Same content as the real page: every section and every heading of the real page is on the demo
+  const heads = (h) => [...h.matchAll(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/g)].map((m) => m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  const miss = heads(real).filter((x) => !heads(file).includes(x));
+  check(miss.length === 0, "type demo: has every heading of the real page", miss.join(" | "));
+  const ids = (h) => [...h.matchAll(/<section[^>]*id="([^"]+)"/g)].map((m) => m[1]);
+  check(ids(real).every((id) => ids(file).includes(id)), "type demo: has every section of the real page", ids(real).join(","));
+
+  const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const fam = (p, sel) => p.evaluate((q) => getComputedStyle(document.querySelector(q)).fontFamily, sel);
+  const css = (p, sel, prop) => p.evaluate(([q, pr]) => getComputedStyle(document.querySelector(q))[pr], [sel, prop]);
+  const styleAttr = (p) => p.evaluate(() => document.documentElement.getAttribute("data-style"));
+
+  let page = await newPage(390, 844, "light");
+  check(await open(page, "/demo-type/") === 200 && page.errors.length === 0, "type demo: loads without errors", page.errors.join(" | "));
+  check(await styleAttr(page) === null && /Fredoka/.test(await fam(page, ".hero h1")) && /Nunito/.test(await fam(page, "body")), "type demo: starts as Today (Fredoka and Nunito)");
+  check(/3px/.test(await css(page, ".hero h1", "webkitTextStrokeWidth")), "type demo: Today keeps the headline outline");
+
+  await page.click("#cmpFab");
+  check(await page.locator("#cmpPanel").isVisible(), "type demo: the Aa button opens the compare panel");
+  const pb = await page.locator("#cmpPanel").boundingBox();
+  check(pb && pb.x >= 0 && pb.x + pb.width <= 390 && pb.y >= 0 && pb.y + pb.height <= 844, "type demo: the panel fits on a 390px phone", JSON.stringify(pb));
+  await page.click("[data-style-choice=type]");
+  check(await styleAttr(page) === "type" && /Bricolage/.test(await fam(page, ".hero h1")) && /Figtree/.test(await fam(page, "body")), "type demo: New type switches to Bricolage Grotesque and Figtree");
+  check(/^0px$/.test(await css(page, ".hero h1", "webkitTextStrokeWidth")) && (await css(page, ".hero h1", "textShadow")) === "none", "type demo: New type removes the headline outline and shadow");
+  check(/Fredoka/.test(await fam(page, ".site-header .wordmark")), "type demo: the logo keeps Fredoka");
+  check(await page.evaluate(() => [...document.querySelectorAll("[data-style-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.styleChoice).join()) === "type", "type demo: the pressed button follows the style");
+  await page.click("[data-style-choice=calm]");
+  const sh = await css(page, ".btn", "boxShadow");
+  check(await styleAttr(page) === "calm" && /Bricolage/.test(await fam(page, ".hero h1")) && !/5px 5px/.test(sh), "type demo: Calmer keeps the new type and softens the button shadow", sh);
+  check(await page.evaluate(() => localStorage.getItem("boondStyle")) === "calm" && await page.evaluate(() => Object.keys(localStorage).every((k) => k === "boondTheme" || k.startsWith("demo_"))), "type demo: the choice is remembered, under demo-only keys");
+  await page.reload(); await page.waitForLoadState("load");
+  check(await styleAttr(page) === "calm", "type demo: the style survives a reload");
+  await page.click("#cmpFab");
+  await page.click("[data-style-choice=today]");
+  check(await styleAttr(page) === null && /Fredoka/.test(await fam(page, ".hero h1")), "type demo: Today restores the current look");
+
+  // Headings stay readable without the outline, in both themes
+  for (const scheme of ["light", "dark"]) {
+    const q = await newPage(390, 844, scheme);
+    await q.addInitScript(() => localStorage.setItem("demo_boondStyle", "type"));
+    await open(q, "/demo-type/");
+    const bgc = await css(q, "body", "backgroundColor");
+    const c1 = await css(q, ".hero h1 .l1", "color"), c2 = await css(q, ".hero h1 .l2", "color");
+    check(ratio(c1, bgc) >= 4.5, `type demo: hero line one is readable on the page (${scheme})`, `${c1} on ${bgc} = ${ratio(c1, bgc).toFixed(2)}`);
+    check(ratio(c2, bgc) >= 3, `type demo: hero line two (large text) is readable on the page (${scheme})`, `${c2} on ${bgc} = ${ratio(c2, bgc).toFixed(2)}`);
+    const jb = await q.evaluate(() => getComputedStyle(document.querySelector(".join")).backgroundColor);
+    const jc = await css(q, ".join .h2", "color");
+    check(ratio(jc, jb) >= 4.5, `type demo: the Join heading is readable on its background (${scheme})`, `${jc} on ${jb} = ${ratio(jc, jb).toFixed(2)}`);
+  }
+
+  // Same behavior as the real page, nothing saved, fits small phones in every style and theme
+  page = await newPage(390, 844, "light"); await open(page, "/demo-type/");
+  await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  await page.fill("#heroEmail", "demo@example.com"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(500);
+  check(await page.locator("#heroFormJoined").isVisible() && !page.api.calls.some((c) => c.action === "signup"), "type demo: the form works like the real one and nothing reaches the server");
+  for (const style of ["today", "type", "calm"]) for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"]]) {
+    const q = await newPage(w, h, scheme);
+    await q.addInitScript((st) => { if (st !== "today") localStorage.setItem("demo_boondStyle", st); }, style);
+    await open(q, "/demo-type/");
+    check(await noSideScroll(q), `type demo: no sideways scroll at ${w}px (${style}, ${scheme})`);
+  }
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
