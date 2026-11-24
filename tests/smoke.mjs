@@ -603,6 +603,42 @@ let hubItems = [];
   }
 }
 
+// ---------- Next-page preview: founder note (demo page only; the real page is untouched) ----------
+{
+  const file = fs.readFileSync(path.join(ROOT, "demo-next", "index.html"), "utf8");
+  const real = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  check(!/id="founder"/.test(real), "next preview: the real page is unchanged (no founder note yet)");
+  check(/name="robots" content="noindex"/.test(file), "next preview: not indexed by search engines");
+  const note = (file.match(/<section class="founder"[\s\S]*?<\/section>/) || [""])[0];
+  check(note.length > 200, "next preview: has the founder note");
+  const text = note.replace(/<[^>]+>/g, " ").toLowerCase();
+  const banned = ["healthy", "electrolyte", "gut", "digest", "immun", "energy", "detox", "gentle", "buy", "sister", "stick", "powder", "concentrate", "packet", " box"].filter((w) => text.includes(w));
+  check(banned.length === 0, "next preview: the founder note has no health claims, no format words, and no family mentions", banned.join(","));
+  check(/Not for sale yet|isn't for sale yet/.test(note), "next preview: the founder note says it is not for sale yet");
+
+  const page = await newPage(390, 844, "light");
+  check(await open(page, "/demo-next/") === 200 && page.errors.length === 0, "next preview: loads without errors", page.errors.join(" | "));
+  await page.locator("#founder img").scrollIntoViewIfNeeded(); await page.waitForTimeout(600);
+  const img = await page.evaluate(() => { const i = document.querySelector("#founder img"); return { ok: i.complete && i.naturalWidth > 0, w: i.naturalWidth, alt: i.alt, r: i.getBoundingClientRect().right, l: i.getBoundingClientRect().left }; });
+  check(img.ok && img.w === 640 && img.alt.length > 10 && img.l >= 0 && img.r <= 390, "next preview: the founder photo loads, has alt text and fits the phone", JSON.stringify(img));
+  const order = await page.evaluate(() => [...document.querySelectorAll("main > section")].map((s) => s.id || s.className.split(" ")[0]).slice(0, 4));
+  check(order[0] === "hero" && order[1] === "founder" && order[2] === "flavors", "next preview: the note sits right under the hero, before the flavors", order.join(" > "));
+  const pos = await page.evaluate(() => document.getElementById("founder").getBoundingClientRect().top + scrollY);
+  const total = await page.evaluate(() => document.documentElement.scrollHeight);
+  check(pos < total * 0.2, "next preview: the note is in the top fifth of the page", `${pos} of ${total}`);
+  check(await page.locator('#founder a[href="#vote"]').count() === 1 && await page.locator('#founder a[href="#story"]').count() === 1, "next preview: the note links to the vote and to 'tell us yours'");
+  await page.click('#founder a[href="#story"]');
+  const arrived = await page.waitForFunction(() => { const r = document.getElementById("story").getBoundingClientRect(); return r.top < 400 && r.bottom > 0; }, null, { timeout: 8000 }).then(() => true).catch(() => false);
+  check(arrived, "next preview: 'Tell us yours' goes to the story form");
+  for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"], [1100, 800, "light"]]) {
+    const q = await newPage(w, h, scheme); await open(q, "/demo-next/");
+    check(await noSideScroll(q), `next preview: no sideways scroll at ${w}px (${scheme})`);
+  }
+  const wide = await newPage(1100, 800, "light"); await open(wide, "/demo-next/");
+  const cols = await wide.evaluate(() => { const i = document.querySelector("#founder img").getBoundingClientRect(), t = document.querySelector("#founder .founder-body").getBoundingClientRect(); return t.left > i.right && Math.abs(i.top - t.top) < 200; });
+  check(cols, "next preview: on a wide screen the photo and text sit side by side");
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
