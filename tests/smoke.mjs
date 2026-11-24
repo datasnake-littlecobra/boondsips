@@ -603,6 +603,57 @@ let hubItems = [];
   }
 }
 
+// ---------- Real home page: Auto / Light / Dark switch and a footer that follows the theme ----------
+{
+  const bg = (p) => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const LIGHT = "rgb(255, 242, 214)", DARK = "rgb(30, 22, 12)";
+  const attr = (p) => p.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  const pressed = (p, scope) => p.evaluate((sc) => [...document.querySelectorAll(sc + " [data-theme-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.getAttribute("data-theme-choice")).join(","), scope);
+  const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const foot = (p) => p.evaluate(() => { const f = document.querySelector(".foot"); const g = (q) => getComputedStyle(f.querySelector(q)); return { bg: getComputedStyle(f).backgroundColor, ink: getComputedStyle(f).color, muted: g("p").color, link: g(".foot-links a").color, pt: g("[aria-pressed=true] span").color, pf: g("[aria-pressed=true]").backgroundColor }; });
+  const file = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  check(file.indexOf('localStorage.getItem("boondTheme")') < file.indexOf("<style>"), "theme: the saved choice is applied before the styles load (no flash)");
+  check(!/id="founder"|founder\.jpg/.test(file), "theme: the home page has no founder note or photo");
+
+  let page = await newPage(390, 844, "light");
+  check(await open(page, "/") === 200 && page.errors.length === 0, "theme: the home page loads without errors", page.errors.join(" | "));
+  check(await bg(page) === LIGHT && await pressed(page, ".foot") === "auto" && (await foot(page)).bg === "rgb(255, 210, 63)", "theme: Auto on a light system is the cream page with the yellow footer");
+  await page.emulateMedia({ colorScheme: "dark" });
+  check(await bg(page) === DARK && (await foot(page)).bg === "rgb(58, 42, 22)", "theme: Auto follows the system into dark (brown footer)");
+  await page.emulateMedia({ colorScheme: "light" });
+
+  await page.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded(); await page.locator(".foot [data-theme-choice=dark]").click();
+  check(await attr(page) === "dark" && await bg(page) === DARK && (await foot(page)).bg === "rgb(58, 42, 22)", "theme: Dark overrides a light system, footer included");
+  check(await pressed(page, ".foot") === "dark" && await pressed(page, ".menu") === "dark", "theme: the footer and menu controls stay in sync");
+  check(await page.evaluate(() => localStorage.getItem("boondTheme")) === "dark", "theme: the choice is remembered in this browser");
+  await page.reload(); await page.waitForLoadState("load");
+  check(await attr(page) === "dark" && await bg(page) === DARK, "theme: the choice survives a reload");
+  const D = await foot(page);
+  check(ratio(D.ink, D.bg) >= 4.5 && ratio(D.muted, D.bg) >= 4.5 && ratio(D.link, D.bg) >= 4.5 && ratio(D.pt, D.pf) >= 4.5, "theme: the dark footer is readable", JSON.stringify(D));
+
+  page = await newPage(390, 844, "dark"); await open(page, "/");
+  check(await bg(page) === DARK && await pressed(page, ".menu") === "auto", "theme: Auto follows a dark system");
+  await page.click("#burger"); await page.waitForTimeout(500);
+  const box = await page.locator(".menu .theme-row").boundingBox();
+  check(box && box.x >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844, "theme: the control fits inside the open menu at 390px", JSON.stringify(box));
+  await page.locator(".menu [data-theme-choice=light]").click();
+  check(await attr(page) === "light" && await bg(page) === LIGHT, "theme: Light overrides a dark system (chosen in the menu)");
+  await page.keyboard.press("Escape"); await page.waitForTimeout(400);
+  await page.locator(".foot [data-theme-choice=light]").scrollIntoViewIfNeeded();
+  const L = await foot(page);
+  check(L.bg === "rgb(255, 210, 63)" && ratio(L.ink, L.bg) >= 4.5 && ratio(L.muted, L.bg) >= 4.5 && ratio(L.link, L.bg) >= 4.5 && ratio(L.pt, L.pf) >= 4.5, "theme: the light footer is yellow and readable", JSON.stringify(L));
+  await page.locator(".foot [data-theme-choice=auto]").click();
+  check(await attr(page) === null && await bg(page) === DARK && await page.evaluate(() => localStorage.getItem("boondTheme")) === null, "theme: Auto removes the override and follows the system again");
+
+  for (const [w, h, scheme, choice] of [[360, 640, "light", null], [360, 640, "dark", null], [390, 844, "dark", "light"], [390, 844, "light", "dark"], [1100, 800, "light", null]]) {
+    const q = await newPage(w, h, scheme);
+    if (choice) await q.addInitScript((c) => localStorage.setItem("boondTheme", c), choice);
+    await open(q, "/");
+    check(await noSideScroll(q), `theme: no sideways scroll on the home page at ${w}px (${scheme}${choice ? ", forced " + choice : ""})`);
+  }
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");

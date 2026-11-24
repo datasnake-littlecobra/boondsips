@@ -11,6 +11,10 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://boondsips.com/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 26'%3E%3Cpath d='M12 1.5C12 1.5 3.5 11.5 3.5 17a8.5 8.5 0 0 0 17 0C20.5 11.5 12 1.5 12 1.5Z' fill='%2314B5B0' stroke='%233A2A16' stroke-width='2'/%3E%3C/svg%3E">
+<script>
+/* Theme: apply the saved choice before first paint, so there is no flash. Auto (no saved choice) follows the system. */
+try { var __t = localStorage.getItem("boondTheme"); if (__t === "light" || __t === "dark") document.documentElement.setAttribute("data-theme", __t); } catch (e) {}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -22,19 +26,20 @@
   --bg:var(--cream); --surface:#FFF8E8; --ink:var(--brown); --muted:#6B5640; --line:var(--brown);
   --shadow:var(--brown); --eyebrow:#B4520A; --track:#EADBB8;
   --header-h:72px;
+  --foot-bg:var(--lemon); --foot-ink:var(--brown); --foot-muted:#5A4228; --foot-stroke:var(--brown); --foot-wm-stroke:0px; --foot-wm-shadow:none;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
     --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
-    color-scheme:dark;
+    --foot-bg:var(--brown); --foot-ink:var(--cream); --foot-muted:#E8D7B5; --foot-stroke:#000; --foot-wm-stroke:2px; --foot-wm-shadow:2px 2px 0 #000; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
   --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
-  color-scheme:dark;
+  --foot-bg:var(--brown); --foot-ink:var(--cream); --foot-muted:#E8D7B5; --foot-stroke:#000; --foot-wm-stroke:2px; --foot-wm-shadow:2px 2px 0 #000; color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--header-h) + 8px);-webkit-text-size-adjust:100%}
@@ -343,11 +348,25 @@ textarea.field{min-height:150px;resize:vertical}
 .join .checks span{background:#FFF8E8}
 
 /* ---------- footer ---------- */
-.foot{background:var(--brown);color:var(--cream);padding:56px 0 40px}
-.foot .wordmark{-webkit-text-stroke:2px #000;text-shadow:2px 2px 0 #000}
-.foot p{margin:16px 0 0;color:#E8D7B5}
-.foot a{color:var(--cream)}
+.foot{background:var(--foot-bg);color:var(--foot-ink);padding:56px 0 40px;border-top:3px solid var(--brown)}
+.foot .wordmark{color:var(--foot-ink);-webkit-text-stroke:var(--foot-wm-stroke) var(--foot-stroke);text-shadow:var(--foot-wm-shadow)}
+.foot .wordmark svg path{stroke:var(--foot-stroke)}
+.foot p{margin:16px 0 0;color:var(--foot-muted)}
+.foot a{color:var(--foot-ink)}
 .foot-links{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:22px;font-weight:700}
+
+
+/* ---------- theme control ---------- */
+.theme-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:700 .95rem/1 "Nunito",sans-serif}
+.theme-seg{display:inline-flex;border:3px solid currentColor;border-radius:999px;overflow:hidden}
+.theme-seg button{font:inherit;color:inherit;background:transparent;border:0;padding:10px 16px;min-height:44px;cursor:pointer}
+.theme-seg button+button{border-left:3px solid currentColor}
+.theme-seg button[aria-pressed="true"]{background:currentColor}
+.theme-seg button[aria-pressed="true"] span{color:var(--seg-on)}
+.theme-seg button:focus-visible{outline:3px solid var(--teal);outline-offset:-6px}
+.menu .theme-row{margin-top:auto;--seg-on:var(--lemon)}
+.menu .theme-row + small{margin-top:18px}
+.foot .theme-row{margin-top:22px;--seg-on:var(--foot-bg)}
 
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
@@ -394,6 +413,11 @@ textarea.field{min-height:150px;resize:vertical}
     <a href="#join">Join the waitlist</a>
     <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">Instagram</a>
   </nav>
+  <div class="theme-row"><span>Theme</span><div class="theme-seg" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true"><span>Auto</span></button>
+      <button type="button" data-theme-choice="light" aria-pressed="false"><span>Light</span></button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false"><span>Dark</span></button>
+    </div></div>
   <small>salty sweet, by the drop</small>
 </div>
 
@@ -640,6 +664,11 @@ textarea.field{min-height:150px;resize:vertical}
       <a href="#join">Join the waitlist</a>
       <a href="learn/">Learn</a>
     </div>
+    <div class="theme-row"><span>Theme</span><div class="theme-seg" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true"><span>Auto</span></button>
+      <button type="button" data-theme-choice="light" aria-pressed="false"><span>Light</span></button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false"><span>Dark</span></button>
+    </div></div>
     <p>&copy; <span id="yr">2026</span> Boond</p>
   </div>
 </footer>
@@ -1019,6 +1048,21 @@ textarea.field{min-height:150px;resize:vertical}
   document.addEventListener("keydown", function(e){ if (e.key === "Escape" && menu.classList.contains("open")) setMenu(false); });
 
   $("yr").textContent = new Date().getFullYear();
+})();
+</script>
+<script>
+/* Theme: Auto follows the phone or computer setting; Light and Dark are remembered in this browser. */
+(function(){
+  "use strict";
+  var KEY = "boondTheme", root = document.documentElement;
+  function saved(){ try { var t = localStorage.getItem(KEY); return t === "light" || t === "dark" ? t : "auto"; } catch (e) { return "auto"; } }
+  function apply(c){
+    if (c === "light" || c === "dark") root.setAttribute("data-theme", c); else root.removeAttribute("data-theme");
+    document.querySelectorAll("[data-theme-choice]").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-theme-choice") === c ? "true" : "false"); });
+  }
+  function choose(c){ try { if (c === "auto") localStorage.removeItem(KEY); else localStorage.setItem(KEY, c); } catch (e) {} apply(c); }
+  apply(saved());
+  document.addEventListener("click", function(e){ var b = e.target.closest("[data-theme-choice]"); if (b) choose(b.getAttribute("data-theme-choice")); });
 })();
 </script>
 </body>
