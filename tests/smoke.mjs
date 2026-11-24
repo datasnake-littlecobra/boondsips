@@ -454,6 +454,63 @@ let hubItems = [];
   check(donate === "", "donateUrl is empty by default", JSON.stringify(donate));
 }
 
+// ---------- Theme demo: Auto / Light / Dark switch (the demo page only; the real page is untouched) ----------
+{
+  const bg = (p) => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const LIGHT = "rgb(255, 242, 214)", DARK = "rgb(30, 22, 12)";
+  const themeAttr = (p) => p.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  const pressed = (p, scope) => p.evaluate((sc) => [...document.querySelectorAll(sc + " [data-theme-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.getAttribute("data-theme-choice")).join(","), scope);
+  const file = fs.readFileSync(path.join(ROOT, "demo-theme", "index.html"), "utf8");
+  check(file.indexOf('localStorage.getItem("boondTheme")') < file.indexOf("<style>"), "theme demo: the saved theme is applied before the styles load (no flash)");
+  check(/name="robots" content="noindex"/.test(file), "theme demo: not indexed by search engines");
+
+  let page = await newPage(390, 844, "light");
+  check(await open(page, "/demo-theme/") === 200 && page.errors.length === 0, "theme demo: loads without errors", page.errors.join(" | "));
+  check(await page.locator(".demo-strip").isVisible(), "theme demo: says it is a demo and nothing is saved");
+  check(await bg(page) === LIGHT && await pressed(page, ".foot") === "auto", "theme demo: Auto follows a light system", await bg(page));
+  await page.emulateMedia({ colorScheme: "dark" });
+  check(await bg(page) === DARK, "theme demo: Auto follows the system when it switches to dark", await bg(page));
+  await page.emulateMedia({ colorScheme: "light" });
+
+  // Dark chosen in the footer, on a light system
+  await page.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded();
+  await page.locator(".foot [data-theme-choice=dark]").click();
+  check(await themeAttr(page) === "dark" && await bg(page) === DARK, "theme demo: Dark overrides a light system");
+  check(await pressed(page, ".foot") === "dark" && await pressed(page, ".menu") === "dark", "theme demo: the footer and menu controls stay in sync");
+  check(await page.evaluate(() => localStorage.getItem("boondTheme")) === "dark", "theme demo: the choice is remembered in this browser");
+  await page.reload(); await page.waitForLoadState("load");
+  check(await themeAttr(page) === "dark" && await bg(page) === DARK, "theme demo: the choice survives a reload");
+  const pb = await page.evaluate(() => { const b = document.querySelector(".foot [data-theme-choice=dark]"); const c = getComputedStyle(b.querySelector("span")).color; return [c, getComputedStyle(b).backgroundColor]; });
+  check(pb[0] !== pb[1], "theme demo: the selected button's text is readable against its fill", pb.join(" on "));
+
+  // Light chosen on a dark system, from the menu
+  page = await newPage(390, 844, "dark"); await open(page, "/demo-theme/");
+  check(await bg(page) === DARK && await pressed(page, ".menu") === "auto", "theme demo: Auto follows a dark system");
+  await page.click("#burger"); await page.waitForTimeout(500);
+  const box = await page.locator(".menu .theme-row").boundingBox();
+  check(box && box.x >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844, "theme demo: the control fits inside the open menu at 390px", JSON.stringify(box));
+  await page.locator(".menu [data-theme-choice=light]").click();
+  check(await themeAttr(page) === "light" && await bg(page) === LIGHT, "theme demo: Light overrides a dark system (chosen in the menu)");
+  await page.locator(".menu [data-theme-choice=auto]").click();
+  check(await themeAttr(page) === null && await bg(page) === DARK && await page.evaluate(() => localStorage.getItem("boondTheme")) === null, "theme demo: Auto removes the override and follows the system again");
+
+  // Nothing is saved, and the real page's memory is untouched
+  page = await newPage(390, 844, "light"); await open(page, "/demo-theme/");
+  await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  await page.fill("#heroEmail", "demo@example.com"); await page.check("#heroForm input[name=consent]"); await page.click("#heroForm button[type=submit]"); await page.waitForTimeout(500);
+  check(await page.locator("#heroFormJoined").isVisible(), "theme demo: the form still behaves like the real one");
+  check(!page.api.calls.some((c) => c.action === "signup"), "theme demo: the signup never reaches the server");
+  const keys = await page.evaluate(() => Object.keys(localStorage));
+  check(keys.every((k) => k === "boondTheme" || k.startsWith("demo_")), "theme demo: the demo does not touch the real page's saved state", keys.join(","));
+  check(await page.evaluate(() => [...document.querySelectorAll("a[href]")].filter((a) => /^learn\//.test(a.getAttribute("href"))).length) === 0, "theme demo: links to other pages are absolute");
+
+  // Fit on small phones, both themes
+  for (const [w, h, scheme] of [[360, 640, "light"], [360, 640, "dark"], [390, 844, "dark"]]) {
+    const q = await newPage(w, h, scheme); await open(q, "/demo-theme/");
+    check(await noSideScroll(q), `theme demo: no sideways scroll at ${w}px (${scheme})`);
+  }
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
