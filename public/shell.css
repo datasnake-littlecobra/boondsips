@@ -7,6 +7,7 @@
   --bg:var(--cream); --surface:#FFF8E8; --ink:var(--brown); --muted:#6B5640; --line:var(--brown);
   --shadow:var(--brown); --eyebrow:#B4520A; --track:#EADBB8;
   --header-h:72px;
+  --foot-bg:var(--lemon); --foot-ink:var(--brown); --foot-muted:#5A4228; --foot-stroke:var(--brown); --foot-wm-stroke:0px; --foot-wm-shadow:none;
   color-scheme:light;
 }
 
@@ -14,14 +15,14 @@
   :root:not([data-theme="light"]){
     --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
     --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
-    color-scheme:dark;
+    --foot-bg:var(--brown); --foot-ink:var(--cream); --foot-muted:#E8D7B5; --foot-stroke:#000; --foot-wm-stroke:2px; --foot-wm-shadow:2px 2px 0 #000; color-scheme:dark;
   }
 }
 
 :root[data-theme="dark"]{
   --bg:#1E160C; --surface:#2A1F12; --ink:#FFF2D6; --muted:#D9C6A3; --line:#0E0A05;
   --shadow:#0E0A05; --eyebrow:#FFB061; --track:#4A3A24; --blush:#3A2430;
-  color-scheme:dark;
+  --foot-bg:var(--brown); --foot-ink:var(--cream); --foot-muted:#E8D7B5; --foot-stroke:#000; --foot-wm-stroke:2px; --foot-wm-shadow:2px 2px 0 #000; color-scheme:dark;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -164,15 +165,35 @@ textarea.field{min-height:150px;resize:vertical}
 .checks input:focus-visible + span{outline:3px solid var(--teal);outline-offset:3px}
 
 /* ---------- footer ---------- */
-.foot{background:var(--brown);color:var(--cream);padding:56px 0 40px}
+.foot{background:var(--foot-bg);color:var(--foot-ink);padding:56px 0 40px;border-top:3px solid var(--brown)}
 
-.foot .wordmark{-webkit-text-stroke:2px #000;text-shadow:2px 2px 0 #000}
+.foot .wordmark{color:var(--foot-ink);-webkit-text-stroke:var(--foot-wm-stroke) var(--foot-stroke);text-shadow:var(--foot-wm-shadow)}
+.foot .wordmark svg path{stroke:var(--foot-stroke)}
 
-.foot p{margin:16px 0 0;color:#E8D7B5}
+.foot p{margin:16px 0 0;color:var(--foot-muted)}
 
-.foot a{color:var(--cream)}
+.foot a{color:var(--foot-ink)}
 
 .foot-links{display:flex;flex-wrap:wrap;gap:12px 26px;margin-top:22px;font-weight:700}
+
+
+/* ---------- theme control, back-to-top, scrollable menu ---------- */
+.menu{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.theme-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:700 .95rem/1 "Nunito",sans-serif}
+.theme-seg{display:inline-flex;border:2px solid currentColor;border-radius:999px;overflow:hidden}
+.theme-seg button{font:inherit;color:inherit;background:transparent;border:0;padding:10px 16px;min-height:44px;cursor:pointer}
+.theme-seg button+button{border-left:2px solid currentColor}
+.theme-seg button[aria-pressed="true"]{background:currentColor}
+.theme-seg button[aria-pressed="true"] span{color:var(--seg-on)}
+.theme-seg button:focus-visible{outline:3px solid var(--teal);outline-offset:-6px}
+.menu .theme-row{margin-top:auto;padding-top:24px;--seg-on:var(--lemon)}
+.menu .theme-row + small{margin-top:18px}
+.foot .theme-row{margin-top:22px;--seg-on:var(--foot-bg)}
+.to-top{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;width:48px;height:48px;border-radius:50%;border:2px solid var(--brown);background:#FFF8E8;color:var(--brown);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 0 rgba(58,42,22,.35);opacity:0;transform:translateY(8px);visibility:hidden;transition:opacity .2s,transform .2s,visibility .2s}
+.to-top.show{opacity:1;transform:none;visibility:visible}
+.to-top svg{width:22px;height:22px}
+.to-top:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+@media (prefers-reduced-motion: reduce){.to-top{transition:none}}
 
 /* ---------- calmer: soft shadows, thinner borders, tighter spacing ---------- */
 .btn,.btn--vote,.pill,.chip,.card-top .chip,.try,.arrow,.menu-close,.site-header .btn,.site-header .btn--learn,
