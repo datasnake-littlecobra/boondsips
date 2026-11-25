@@ -603,6 +603,56 @@ let hubItems = [];
   }
 }
 
+// ---------- Type demo: founder note and FAQ (demo page only; the real home page is untouched) ----------
+{
+  const file = fs.readFileSync(path.join(ROOT, "demo-type", "index.html"), "utf8");
+  const real = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  check(!/id="founder"|id="faq"|founder\.jpg|demo-type/.test(real), "founder/faq: the real home page has no founder note, no FAQ, no photo and no link to the demo");
+  const grab = (re) => (file.match(re) || [""])[0];
+  const founder = grab(/<section class="founder"[\s\S]*?<\/section>/), faq = grab(/<section class="faq"[\s\S]*?<\/section>/);
+  check(founder.length > 200 && faq.length > 200, "founder/faq: the demo has the founder note and the FAQ");
+  const words = /\b(healthy|electrolytes?|gut|digest\w*|immun\w*|energy|detox\w*|gentle|buy|sister|stick|sticks|powder|concentrate|packet|recovery|prebiotic)\b/i;
+  const plain = (h) => h.replace(/<[^>]+>/g, " ");
+  check(!words.test(plain(founder)) && !words.test(plain(faq)), "founder/faq: no health claims, no product-format words, no family mentions", (plain(founder) + plain(faq)).match(words)?.[0]);
+  check(/targets while we test/.test(faq) && /isn't for sale yet|It isn't for sale/.test(faq), "founder/faq: the FAQ says the numbers are targets while we test, and that it is not for sale yet");
+  check((faq.match(/<details>/g) || []).length === 8, "founder/faq: the FAQ has eight questions");
+
+  const page = await newPage(390, 844, "light");
+  check(await open(page, "/demo-type/") === 200 && page.errors.length === 0, "founder/faq: the demo still loads without errors", page.errors.join(" | "));
+  const order = await page.evaluate(() => [...document.querySelectorAll("main > section")].map((x) => x.id || x.className.split(" ")[0]));
+  check(order[0] === "hero" && order[1] === "founder" && order[2] === "flavors", "founder/faq: the founder note sits right under the hero", order.slice(0, 4).join(" > "));
+  check(order.indexOf("story") < order.indexOf("faq") && order.indexOf("faq") + 1 === order.indexOf("join"), "founder/faq: the FAQ sits after the story form and before Join", order.join(" > "));
+  await page.locator("#founder img").scrollIntoViewIfNeeded(); await page.waitForTimeout(500);
+  const img = await page.evaluate(() => { const i = document.querySelector("#founder img"); return { ok: i.complete && i.naturalWidth > 0, w: i.naturalWidth, alt: i.alt, l: i.getBoundingClientRect().left, r: i.getBoundingClientRect().right }; });
+  check(img.ok && img.w === 640 && img.alt.length > 10 && img.l >= 0 && img.r <= 390, "founder/faq: the photo loads, has alt text and fits the phone", JSON.stringify(img));
+
+  const open0 = await page.evaluate(() => [...document.querySelectorAll("#faq details")].filter((d) => d.open).length);
+  await page.locator("#faq details").first().scrollIntoViewIfNeeded();
+  await page.locator("#faq summary").first().click();
+  const afterClick = await page.evaluate(() => [...document.querySelectorAll("#faq details")].map((d) => d.open));
+  check(open0 === 0 && afterClick[0] === true && afterClick.slice(1).every((o) => o === false), "founder/faq: questions start closed and one opens on tap");
+  await page.locator("#faq summary").nth(1).focus(); await page.keyboard.press("Enter");
+  check(await page.evaluate(() => document.querySelectorAll("#faq details")[1].open), "founder/faq: a question opens from the keyboard");
+  await page.locator("#faq summary").first().click();
+  check(!(await page.evaluate(() => document.querySelectorAll("#faq details")[0].open)), "founder/faq: a question closes on a second tap");
+
+  // fonts follow the chosen style, and the text stays readable in both themes
+  const fam = (p, sel) => p.evaluate((q) => getComputedStyle(document.querySelector(q)).fontFamily, sel);
+  check(/Fredoka/.test(await fam(page, "#faq summary")) && /Fredoka/.test(await fam(page, "#founder .h2")), "founder/faq: Today uses Fredoka for the new headings");
+  await page.click("#cmpFab"); await page.click("[data-style-choice=type]");
+  check(/Bricolage/.test(await fam(page, "#faq summary")) && /Bricolage/.test(await fam(page, "#founder .h2")) && /Figtree/.test(await fam(page, "#faq details p")), "founder/faq: New type switches the new sections too");
+  const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  for (const scheme of ["light", "dark"]) {
+    const q = await newPage(390, 844, scheme); await open(q, "/demo-type/");
+    const c = await q.evaluate(() => { const d = document.querySelector("#faq details"); const sm = d.querySelector("summary"); const p = d.querySelector("p"); const body = document.querySelector("#founder .founder-body p:nth-of-type(2)"); return { dbg: getComputedStyle(d).backgroundColor, sc: getComputedStyle(sm).color, pc: getComputedStyle(p).color, bodyBg: getComputedStyle(document.body).backgroundColor, fc: getComputedStyle(body).color }; });
+    check(ratio(c.sc, c.dbg) >= 4.5 && ratio(c.pc, c.dbg) >= 4.5 && ratio(c.fc, c.bodyBg) >= 4.5, `founder/faq: the new sections are readable (${scheme})`, JSON.stringify(c));
+  }
+  // wide screens
+  const wide = await newPage(1100, 800, "light"); await open(wide, "/demo-type/");
+  check(await wide.evaluate(() => { const i = document.querySelector("#founder img").getBoundingClientRect(), t = document.querySelector("#founder .founder-body").getBoundingClientRect(); return t.left > i.right; }) && await noSideScroll(wide), "founder/faq: on a wide screen the photo and text sit side by side, no sideways scroll");
+}
+
 await browser.close();
 server.close();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
