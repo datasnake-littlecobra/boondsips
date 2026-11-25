@@ -93,3 +93,9 @@ Never commit API tokens, passwords or keys. Put them in Cloudflare
 ## Welcome email
 
 Joining counts immediately. A new signup gets one welcome email (where Boond is now, a vote button, links to Learn and Instagram, a reply line, and a one-tap unsubscribe), sent through Resend from hello@boondsips.com. It is sent at most once per address (`welcomed_at`) and at most `MAIL_DAILY_CAP` (default 60) per day. Joining again after unsubscribing puts the address back and sends the welcome email again. Supabase secrets: `RESEND_API_KEY`, `MAIL_TEST_TO` (until the postal address is set, mail goes only to this address), `BOOND_POSTAL_ADDRESS` (footer address; setting it opens sending to everyone). The checkbox wording lives in the site forms and in `CONSENT_TEXT` in the function; keep them identical.
+
+## Sign in (magic link) and My Boond
+
+Pages: `/signin/` (ask for a link), `/me/` (profile: picks, email setting, sign out, delete my data) and `/help/email/` (finding our emails). They are not linked from the home page yet.
+
+How it works: `signin_request` emails a one-time link, `https://boondsips.com/me/#t=<token>`, to an address that is on the list and not unsubscribed. The token sits after the `#`, so it is never sent to a server or logged. `/me/` sends it once (`signin_redeem`), removes it from the address bar, and keeps a session token in the browser (`boondSession`, 30 days). Only SHA-256 hashes of both tokens are stored (`boond_login_tokens`, `boond_sessions`). A link works once and expires after 15 minutes. The answer to `signin_request` is the same whether or not the address is on the list. Limits: 3 sign-in emails per address per hour, and `MAIL_LOGIN_DAILY_CAP` (default 100) per day. Actions after sign-in: `me_get`, `me_update` (picks, kept in step with the person's votes), `me_prefs` (email on or off), `me_delete` (removes the signup, votes, and any linked story or flavor idea), `signout`.

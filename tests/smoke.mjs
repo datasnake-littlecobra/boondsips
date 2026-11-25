@@ -47,6 +47,7 @@ const newPage = async (width = 390, height = 844, colorScheme = "light") => {
     if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: H });
     const body = JSON.parse(req.postData() || "{}");
     page.api.calls.push(body);
+    if (page.api.respond) { const r = page.api.respond(body); if (r) return route.fulfill({ status: r.status || 200, headers: H, body: JSON.stringify(r.body) }); }
     if (body.action === "tally") return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, tally: page.api.tally, total: page.api.total }) });
     return route.fulfill({ status: 200, headers: H, body: JSON.stringify({ ok: true, mailed: page.api.mailed === true }) });
   });
@@ -651,6 +652,99 @@ let hubItems = [];
   // wide screens
   const wide = await newPage(1100, 800, "light"); await open(wide, "/demo-type/");
   check(await wide.evaluate(() => { const i = document.querySelector("#founder img").getBoundingClientRect(), t = document.querySelector("#founder .founder-body").getBoundingClientRect(); return t.left > i.right; }) && await noSideScroll(wide), "founder/faq: on a wide screen the photo and text sit side by side, no sideways scroll");
+}
+
+// ---------- Sign-in (magic link), My Boond, and the email-help page ----------
+{
+  const T = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFG";
+  const SESSION = "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS";
+  const files = Object.fromEntries(["signin", "me", "help/email"].map((d) => [d, fs.readFileSync(path.join(ROOT, d, "index.html"), "utf8")]));
+  const real = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  check(Object.values(files).every((f) => /name="robots" content="noindex"/.test(f)), "signin/me/help: not indexed by search engines for now");
+  check(!/href="\/(signin|me)\/?"|help\/email/.test(real), "signin/me/help: the real home page does not link to them yet");
+  check(Object.values(files).every((f) => f.indexOf('localStorage.getItem("boondTheme")') < f.indexOf("<style>")), "signin/me/help: the saved theme is applied before the styles load");
+  const words = /\b(healthy|electrolytes?|gut|digest\w*|immun\w*|energy|detox\w*|gentle|buy|stick|sticks|powder|concentrate|packet|recovery|prebiotic)\b/i;
+  check(Object.values(files).every((f) => !words.test(f.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/g, " "))), "signin/me/help: no health claims and no product-format words");
+
+  // ---- /signin/
+  let page = await newPage(390, 844, "light");
+  check(await open(page, "/signin/") === 200 && page.errors.length === 0, "signin: loads without errors", page.errors.join(" | "));
+  await page.fill("#email", "not-an-email"); await page.click("#go");
+  check((await page.textContent("#msg")).includes("valid email") && !page.api.calls.some((c) => c.action === "signin_request"), "signin: a bad address is refused and nothing is sent");
+  await page.fill("#email", "Me@Example.com"); await page.click("#go"); await page.waitForTimeout(400);
+  const sc = page.api.calls.find((c) => c.action === "signin_request");
+  check(sc && sc.email === "Me@Example.com" && sc.website === "", "signin: sends the address and an empty spam-trap field", JSON.stringify(sc));
+  check(await page.locator("#sent").isVisible() && await page.locator("#ask").isHidden(), "signin: shows 'Check your email' after sending");
+  check((await page.textContent("#sent")).includes("If that address is on the Boond list") && await page.locator('#sent a[href="/help/email/"]').count() === 1, "signin: the message does not reveal who is on the list, and links to the email help");
+  await page.click("#again");
+  check(await page.locator("#ask").isVisible() && (await page.inputValue("#email")) === "", "signin: 'Use a different email' brings the form back, empty");
+  page.api.respond = (b) => b.action === "signin_request" ? { status: 500, body: { error: "server_error" } } : null;
+  await page.fill("#email", "me@example.com"); await page.click("#go"); await page.waitForTimeout(400);
+  check((await page.textContent("#msg")).includes("Something went wrong") && await page.locator("#sent").isHidden(), "signin: a server problem shows a friendly message");
+  const signed = await newPage(390, 844, "light");
+  await signed.addInitScript(() => localStorage.setItem("boondSession", "x"));
+  await open(signed, "/signin/");
+  check(await signed.locator("#already").isVisible(), "signin: a signed-in browser is offered My Boond");
+
+  // ---- /me/
+  const meOpen = async (url, respond, init) => { const p = await newPage(390, 844, "light"); if (init) await p.addInitScript(init); p.api.respond = respond; await open(p, url); await p.waitForTimeout(500); return p; };
+  const good = (b) => ({ signin_redeem: { body: { ok: true, session: SESSION, expires_at: "2099-01-01T00:00:00Z" } }, me_get: { body: { ok: true, email: "someone-with-a-rather-long-address@example-domain.com", flavors: ["mango", "lemon"], subscribed: true, joined: "2026-11-22T00:00:00Z" } }, me_update: { body: { ok: true } }, me_prefs: { body: { ok: true } }, signout: { body: { ok: true } }, me_delete: { body: { ok: true } } })[b.action] || null;
+
+  page = await meOpen("/me/", good);
+  check(await page.locator("#vOut").isVisible() && await page.locator('#vOut a[href="/signin/"]').count() === 1 && page.api.calls.length === 0, "me: with no link and no session it asks you to sign in, and sends nothing");
+
+  page = await meOpen("/me/#t=" + T, good);
+  const redeem = page.api.calls.find((c) => c.action === "signin_redeem");
+  check(redeem && redeem.token === T, "me: a sign-in link sends its token once", JSON.stringify(redeem));
+  check(!page.url().includes("#t=") && !page.url().includes(T), "me: the token is removed from the address bar", page.url());
+  check(await page.evaluate(() => localStorage.getItem("boondSession")) === SESSION, "me: the session is kept in this browser");
+  const mg = page.api.calls.find((c) => c.action === "me_get");
+  check(mg && mg.session === SESSION && await page.locator("#vIn").isVisible(), "me: loads the profile with the session");
+  check((await page.textContent("#who")).includes("someone-with-a-rather-long-address@example-domain.com"), "me: shows the signed-in email");
+  check(await page.evaluate(() => [...document.querySelectorAll('#picks input:checked')].map((i) => i.value).join()) === "mango,lemon" && await page.isChecked("#subscribed"), "me: shows the saved picks and email setting");
+  check(await noSideScroll(page), "me: a long email does not cause sideways scroll at 390px");
+
+  await page.uncheck('#picks input[value=lemon]'); await page.check('#picks input[value=guava]'); await page.click("#savePicks"); await page.waitForTimeout(400);
+  const up = page.api.calls.find((c) => c.action === "me_update");
+  check(up && up.session === SESSION && [...up.flavors].sort().join() === "guava,mango", "me: saving picks sends the chosen flavors", JSON.stringify(up));
+  check((await page.textContent("#picksMsg")).includes("Saved"), "me: tells you the picks are saved");
+  await page.uncheck("#subscribed"); await page.click("#savePrefs"); await page.waitForTimeout(400);
+  const pf = page.api.calls.find((c) => c.action === "me_prefs");
+  check(pf && pf.subscribed === false && (await page.textContent("#prefsMsg")).includes("won't email"), "me: turning emails off is sent and confirmed");
+
+  await page.click("#delAsk");
+  check(await page.locator("#delBox").isVisible(), "me: 'Delete my data' asks first");
+  await page.click("#delNo");
+  check(await page.locator("#delBox").isHidden() && !page.api.calls.some((c) => c.action === "me_delete"), "me: 'Keep my data' cancels, nothing is deleted");
+  await page.click("#delAsk"); await page.click("#delYes"); await page.waitForTimeout(400);
+  const dl = page.api.calls.find((c) => c.action === "me_delete");
+  check(dl && dl.confirm === true && await page.locator("#vGone").isVisible() && await page.evaluate(() => localStorage.getItem("boondSession")) === null, "me: confirmed delete is sent, the browser forgets the session, and a goodbye page shows");
+
+  page = await meOpen("/me/", good, () => localStorage.setItem("boondSession", "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"));
+  check(await page.locator("#vIn").isVisible() && page.api.calls[0].action === "me_get" && page.api.calls[0].session === "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", "me: a returning browser goes straight to the profile");
+  await page.click("#signout"); await page.waitForTimeout(400);
+  check(page.api.calls.some((c) => c.action === "signout") && await page.locator("#vOut").isVisible() && await page.evaluate(() => localStorage.getItem("boondSession")) === null, "me: signing out ends the session here and on the server");
+
+  page = await meOpen("/me/", (b) => b.action === "me_get" ? { status: 401, body: { error: "invalid_session" } } : null, () => localStorage.setItem("boondSession", "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"));
+  check(await page.locator("#vOut").isVisible() && (await page.textContent("#outMsg")).includes("expired") && await page.evaluate(() => localStorage.getItem("boondSession")) === null, "me: an expired session says so and is cleared");
+  page = await meOpen("/me/#t=" + T, (b) => b.action === "signin_redeem" ? { status: 400, body: { error: "invalid_token" } } : null);
+  check(await page.locator("#vOut").isVisible() && (await page.textContent("#outMsg")).includes("expired or was already used") && await page.evaluate(() => localStorage.getItem("boondSession")) === null, "me: a used or old link explains itself and offers a new one");
+  page = await meOpen("/me/#t=tooshort", good);
+  check(await page.locator("#vOut").isVisible() && !page.api.calls.some((c) => c.action === "signin_redeem"), "me: a malformed link sends nothing");
+
+  // ---- /help/email/
+  page = await newPage(390, 844, "light");
+  check(await open(page, "/help/email/") === 200 && page.errors.length === 0, "help: loads without errors", page.errors.join(" | "));
+  const hl = await page.evaluate(() => ({ steps: document.querySelectorAll("ol > li").length, text: document.body.innerText, ext: [...document.querySelectorAll("a[href^=http]")].map((a) => new URL(a.href).hostname) }));
+  check(hl.steps === 4 && hl.text.includes("hello@boondsips.com") && /Not spam/.test(hl.text) && /Not junk/.test(hl.text), "help: four steps, the sender address, and both common button names");
+  check(hl.ext.every((h) => h === "www.instagram.com"), "help: the only outside link is Instagram, no unverified provider links", hl.ext.join());
+
+  // ---- small phones and dark mode
+  for (const [u, w, h, scheme] of [["/signin/", 360, 640, "light"], ["/signin/", 390, 844, "dark"], ["/me/", 360, 640, "dark"], ["/help/email/", 360, 640, "light"], ["/help/email/", 390, 844, "dark"]]) {
+    const q = await newPage(w, h, scheme); q.api.respond = good; await q.addInitScript(() => localStorage.setItem("boondSession", "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"));
+    await open(q, u); await q.waitForTimeout(300);
+    check(await noSideScroll(q), `signin/me/help: no sideways scroll on ${u} at ${w}px (${scheme})`);
+  }
 }
 
 await browser.close();
