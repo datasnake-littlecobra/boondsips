@@ -547,7 +547,10 @@ let hubItems = [];
   check(await page.evaluate(() => [...document.querySelectorAll("[data-style-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.styleChoice).join()) === "type", "type demo: the pressed button follows the style");
   await page.click("[data-style-choice=calm]");
   const sh = await css(page, ".btn", "boxShadow");
-  check(await styleAttr(page) === "calm" && /Bricolage/.test(await fam(page, ".hero h1")) && !/5px 5px/.test(sh), "type demo: Calmer keeps the new type and softens the button shadow", sh);
+  check(await styleAttr(page) === "calm" && /Fredoka/.test(await fam(page, ".hero h1")) && /Nunito/.test(await fam(page, "body")) && !/5px 5px/.test(sh), "type demo: Calmer keeps today's fonts and softens the button shadow", sh);
+  check(/3px/.test(await css(page, ".hero h1", "webkitTextStrokeWidth")), "type demo: Calmer keeps today's headline outline");
+  const shadows = await page.evaluate(() => ["#heroForm .btn", ".chip", ".pill", ".site-header .btn", ".site-header .btn--learn", ".btn--vote", ".card", ".try"].map((q) => { const e = document.querySelector(q); return e ? [q, getComputedStyle(e).boxShadow] : [q, "MISSING"]; }));
+  check(shadows.every(([, v]) => v !== "MISSING" && !/(\d+)px (\d+)px 0px/.test(v.replace(/rgba?\([^)]*\)/g, "")) || !/ [3-9]px [3-9]px 0px/.test(v)), "type demo: Calmer has no hard offset shadow on buttons, chips, pills and cards", JSON.stringify(shadows));
   check(await page.evaluate(() => localStorage.getItem("boondStyle")) === "calm" && await page.evaluate(() => Object.keys(localStorage).every((k) => k === "boondTheme" || k.startsWith("demo_"))), "type demo: the choice is remembered, under demo-only keys");
   await page.reload(); await page.waitForLoadState("load");
   check(await styleAttr(page) === "calm", "type demo: the style survives a reload");
@@ -745,6 +748,28 @@ let hubItems = [];
     await open(q, u); await q.waitForTimeout(300);
     check(await noSideScroll(q), `signin/me/help: no sideways scroll on ${u} at ${w}px (${scheme})`);
   }
+}
+
+// ---------- Type demo: Calmer spacing ----------
+{
+  const measure = async (style) => {
+    const q = await newPage(390, 844, "light");
+    await q.addInitScript((st) => { if (st !== "today") localStorage.setItem("demo_boondStyle", st); }, style);
+    await open(q, "/demo-type/"); await q.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6); await q.evaluate(() => document.fonts.ready); await q.waitForTimeout(500);
+    return q.evaluate(() => {
+      const top = (sel) => document.querySelector(sel).getBoundingClientRect().top + scrollY;
+      const pad = (sel) => { const c = getComputedStyle(document.querySelector(sel)); return [parseFloat(c.paddingTop), parseFloat(c.paddingBottom)]; };
+      const hdr = document.querySelector(".site-header").getBoundingClientRect().height;
+      return { total: document.documentElement.scrollHeight, heroPill: top(".pill") - hdr - document.querySelector(".demo-strip").getBoundingClientRect().height, pillToEyebrow: document.querySelector(".hero .eyebrow").getBoundingClientRect().top - document.querySelector(".pill").getBoundingClientRect().bottom, eyebrowToH1: document.querySelector(".hero h1").getBoundingClientRect().top - document.querySelector(".hero .eyebrow").getBoundingClientRect().bottom, who: pad(".who"), why: pad(".why"), how: pad(".how"), math: pad(".math"), vote: pad(".vote"), faq: pad(".faq"), join: pad(".join") };
+    });
+  };
+  const T0 = await measure("today"), C = await measure("calm");
+  console.log("   spacing today:", JSON.stringify({ total: T0.total, heroPill: T0.heroPill, who: T0.who, why: T0.why, vote: T0.vote }));
+  console.log("   spacing calmer:", JSON.stringify({ total: C.total, heroPill: C.heroPill, who: C.who, why: C.why, vote: C.vote }));
+  check(C.heroPill < T0.heroPill * 0.7, "type demo: Calmer shrinks the gap between the top bar and 'Launching soon'", `${T0.heroPill} -> ${C.heroPill}`);
+  check(C.pillToEyebrow < T0.pillToEyebrow && C.eyebrowToH1 < T0.eyebrowToH1, "type demo: Calmer tightens the space around 'Salty sweet, by the drop'", `${T0.pillToEyebrow}/${T0.eyebrowToH1} -> ${C.pillToEyebrow}/${C.eyebrowToH1}`);
+  check(["who", "why", "how", "math", "vote", "faq", "join"].every((k) => C[k][0] + C[k][1] < T0[k][0] + T0[k][1]), "type demo: Calmer cuts the padding of every section", JSON.stringify([T0.who, C.who]));
+  check(C.total < T0.total * 0.95, "type demo: Calmer makes the whole page at least 5 percent shorter", `${T0.total} -> ${C.total}`);
 }
 
 await browser.close();
