@@ -1,5 +1,6 @@
 // Boond waitlist endpoint (Supabase Edge Function, public, verify_jwt = false).
-// Actions: signup, vote, unvote, tally, suggest, story, unsubscribe. The service key is injected by
+// Actions: signup, vote, unvote, tally, suggest, story, unsubscribe,
+// signin_request, signin_redeem, me_get, me_update, me_prefs, me_delete, signout (passwordless sign-in). The service key is injected by
 // Supabase at runtime and never leaves it. Tables are boond_* with RLS on.
 //
 // Secrets: RESEND_API_KEY, MAIL_TEST_TO (owner's inbox, used until the postal address is set), BOOND_POSTAL_ADDRESS.
@@ -57,6 +58,37 @@ function cleanFlavors(v: unknown): string[] {
 
 function cleanVoter(v: unknown): string | null {
   return typeof v === "string" && UUID_RE.test(v) ? v.toLowerCase() : null;
+}
+
+// ---- Passwordless sign-in. Only SHA-256 hashes of tokens are stored. ----
+const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
+const LOGIN_TTL_MS = 15 * 60_000;                 // a sign-in link works once, for 15 minutes
+const SESSION_TTL_MS = 30 * 24 * 3600_000;        // a signed-in browser stays signed in for 30 days
+const LOGIN_HOURLY_PER_PERSON = 3;                // sign-in emails per address per hour
+const LOGIN_DAILY_CAP = Number(Deno.env.get("MAIL_LOGIN_DAILY_CAP") ?? "100");
+
+async function sha256Hex(v: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function newToken(): string {
+  const b = crypto.getRandomValues(new Uint8Array(32));
+  return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// Returns the signup id for a valid, unexpired session token, otherwise null.
+async function sessionFor(token: unknown): Promise<string | null> {
+  if (typeof token !== "string" || !TOKEN_RE.test(token)) return null;
+  const { data, error } = await db
+    .from("boond_sessions")
+    .select("id, signup_id, expires_at")
+    .eq("token_hash", await sha256Hex(token))
+    .maybeSingle();
+  if (error) throw error;
+  if (!data || new Date(data.expires_at).getTime() < Date.now()) return null;
+  await db.from("boond_sessions").update({ last_seen_at: new Date().toISOString() }).eq("id", data.id);
+  return data.signup_id as string;
 }
 
 // Attach this browser's anonymous votes to the signup, so the owner can see who voted for what.
@@ -117,6 +149,7 @@ function welcomeMail(unsubUrl: string) {
     "--",
     "You got this because you joined the Boond list at boondsips.com. If that wasn't you, unsubscribe in one tap.",
     `Unsubscribe: ${unsubUrl}`,
+    `Landed in spam or Promotions? Here is how to fix it: ${SITE}/help/email/`,
     address,
   ].join("\n");
   const h = (t: string) => `<p style="margin:22px 0 4px;font-size:12px;letter-spacing:.08em;font-weight:700;color:#3A2A16b3;">${t}</p>`;
@@ -136,12 +169,12 @@ ${h("WHILE YOU WAIT")}
 <p>Have a question, or a food memory that tastes like home? Just reply to this email. It goes to a real inbox.</p>
 <p style="margin-top:24px;">salty sweet, by the drop<br><strong>Boond</strong></p>
 <hr style="border:none;border-top:1px solid #3A2A1633;margin:28px 0 14px;">
-<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because you joined the Boond list at boondsips.com. If that wasn't you, <a href="${unsubUrl}" style="color:#3A2A16;">unsubscribe in one tap</a>.<br>${esc(address)}</p>
+<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because you joined the Boond list at boondsips.com. If that wasn't you, <a href="${unsubUrl}" style="color:#3A2A16;">unsubscribe in one tap</a>.<br>Landed in spam or Promotions? <a href="${SITE}/help/email/" style="color:#3A2A16;">Here is how to fix it</a>.<br>${esc(address)}</p>
 </div></body></html>`;
   return { subject: "Welcome to Boond", text, html };
 }
 
-async function sendMail(to: string, mail: { subject: string; text: string; html: string }, unsubUrl: string) {
+async function sendMail(to: string, mail: { subject: string; text: string; html: string }, unsubUrl?: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${Deno.env.get("RESEND_API_KEY")}`, "Content-Type": "application/json" },
@@ -152,7 +185,7 @@ async function sendMail(to: string, mail: { subject: string; text: string; html:
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
-      headers: { "List-Unsubscribe": `<${unsubUrl}>, <mailto:${MAIL_REPLY_TO}?subject=unsubscribe>` },
+      ...(unsubUrl ? { headers: { "List-Unsubscribe": `<${unsubUrl}>, <mailto:${MAIL_REPLY_TO}?subject=unsubscribe>` } } : {}),
     }),
     signal: AbortSignal.timeout(8000),
   });
@@ -206,6 +239,72 @@ async function sendWelcome(signupId: string, email: string): Promise<MailStatus>
   } catch (e) {
     console.error("boond-waitlist mail error:", e instanceof Error ? e.message : "unknown");
     return "failed";
+  }
+}
+
+function signinMail(url: string) {
+  const address = Deno.env.get("BOOND_POSTAL_ADDRESS") ?? "";
+  const help = `${SITE}/help/email/`;
+  const text = [
+    "Tap this link to sign in to Boond:",
+    url,
+    "",
+    "It works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email.",
+    "",
+    `Can't find our emails? ${help}`,
+    "",
+    "salty sweet, by the drop",
+    "Boond",
+    "",
+    "--",
+    "You got this because someone asked to sign in at boondsips.com with this address.",
+    address,
+  ].join("\n");
+  const html = `<!doctype html><html><body style="margin:0;background:#FFF2D6;">
+<div style="max-width:520px;margin:0 auto;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;color:#3A2A16;font-size:16px;line-height:1.5;">
+<div style="font-size:30px;font-weight:700;color:#FF8A1F;">Boond</div>
+<p style="margin:18px 0 0;"><strong>Your sign-in link</strong></p>
+<p><a href="${url}" style="display:inline-block;background:#FF8A1F;color:#3A2A16;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px;">Sign in to Boond</a></p>
+<p>It works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email.</p>
+<p style="margin-top:24px;">salty sweet, by the drop<br><strong>Boond</strong></p>
+<hr style="border:none;border-top:1px solid #3A2A1633;margin:28px 0 14px;">
+<p style="font-size:12px;color:#3A2A16b3;margin:0;">You got this because someone asked to sign in at boondsips.com with this address. Can't find our emails? <a href="${help}" style="color:#3A2A16;">Here is how</a>.<br>${esc(address)}</p>
+</div></body></html>`;
+  return { subject: "Your Boond sign-in link", text, html };
+}
+
+// Email a sign-in link if this address is on the list. Always quiet about the outcome, so nobody can
+// use it to find out who is on the list. The link carries its token after a "#", which browsers never
+// send to a server and email scanners that only fetch the page cannot use.
+async function requestSignin(email: string): Promise<void> {
+  try {
+    if (mailGate(email) !== "ok") { console.log("boond-waitlist signin skipped: gate"); return; }
+    const { data: row, error } = await db
+      .from("boond_waitlist_signups").select("id, unsubscribed_at").eq("email", email).maybeSingle();
+    if (error) throw error;
+    if (!row || row.unsubscribed_at) { console.log("boond-waitlist signin skipped: no_account"); return; }
+    const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
+    const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+    const day = await db.from("boond_login_tokens").select("id", { count: "exact", head: true }).gte("created_at", dayAgo);
+    if (day.error) throw day.error;
+    if ((day.count ?? 0) >= LOGIN_DAILY_CAP) { console.log("boond-waitlist signin skipped: daily_cap"); return; }
+    const hour = await db.from("boond_login_tokens").select("id", { count: "exact", head: true }).eq("signup_id", row.id).gte("created_at", hourAgo);
+    if (hour.error) throw hour.error;
+    if ((hour.count ?? 0) >= LOGIN_HOURLY_PER_PERSON) { console.log("boond-waitlist signin skipped: hourly_limit"); return; }
+    const token = newToken();
+    const ins = await db.from("boond_login_tokens")
+      .insert({ signup_id: row.id, token_hash: await sha256Hex(token), expires_at: new Date(Date.now() + LOGIN_TTL_MS).toISOString() })
+      .select("id").single();
+    if (ins.error) throw ins.error;
+    try {
+      await sendMail(email, signinMail(`${SITE}/me/#t=${token}`));
+    } catch (e) {
+      await db.from("boond_login_tokens").delete().eq("id", ins.data.id);
+      throw e;
+    }
+    console.log("boond-waitlist signin sent");
+  } catch (e) {
+    console.error("boond-waitlist signin error:", e instanceof Error ? e.message : "unknown");
   }
 }
 
@@ -390,6 +489,103 @@ Deno.serve(async (req: Request) => {
         }
         const { error } = await db.from("boond_stories").insert({ story, signup_id: signupId });
         if (error) throw error;
+        return json({ ok: true }, 200, cors);
+      }
+
+      case "signin_request": {
+        const email = cleanEmail(body.email);
+        if (!email) return json({ error: "invalid_email" }, 400, cors);
+        await requestSignin(email);
+        return json({ ok: true }, 200, cors); // same answer whether or not the address is on the list
+      }
+
+      case "signin_redeem": {
+        const token = typeof body.token === "string" ? body.token.trim() : "";
+        if (!TOKEN_RE.test(token)) return json({ error: "invalid_token" }, 400, cors);
+        const nowIso = new Date().toISOString();
+        const { data: used, error } = await db
+          .from("boond_login_tokens")
+          .update({ used_at: nowIso })
+          .eq("token_hash", await sha256Hex(token))
+          .is("used_at", null)
+          .gt("expires_at", nowIso)
+          .select("signup_id");
+        if (error) throw error;
+        if (!used || used.length === 0) return json({ error: "invalid_token" }, 400, cors);
+        const session = newToken();
+        const expires = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+        const { error: serr } = await db
+          .from("boond_sessions")
+          .insert({ signup_id: used[0].signup_id, token_hash: await sha256Hex(session), expires_at: expires });
+        if (serr) throw serr;
+        return json({ ok: true, session, expires_at: expires }, 200, cors);
+      }
+
+      case "me_get": {
+        const id = await sessionFor(body.session);
+        if (!id) return json({ error: "invalid_session" }, 401, cors);
+        const { data: su, error } = await db
+          .from("boond_waitlist_signups").select("email, flavor_picks, unsubscribed_at, created_at").eq("id", id).single();
+        if (error) throw error;
+        const { data: votes, error: verr } = await db.from("boond_flavor_votes").select("flavor").eq("signup_id", id);
+        if (verr) throw verr;
+        const flavors = [...new Set([...(su.flavor_picks ?? []), ...(votes ?? []).map((v: { flavor: string }) => v.flavor)])]
+          .filter((f) => FLAVORS.includes(f));
+        return json({ ok: true, email: su.email, flavors, subscribed: su.unsubscribed_at === null, joined: su.created_at }, 200, cors);
+      }
+
+      case "me_update": {
+        const id = await sessionFor(body.session);
+        if (!id) return json({ error: "invalid_session" }, 401, cors);
+        const flavors = cleanFlavors(body.flavors);
+        const up = await db.from("boond_waitlist_signups").update({ flavor_picks: flavors }).eq("id", id);
+        if (up.error) throw up.error;
+        // keep this person's votes in step with their picks
+        const { data: have, error } = await db.from("boond_flavor_votes").select("id, flavor").eq("signup_id", id);
+        if (error) throw error;
+        const haveFlavors = new Set((have ?? []).map((v: { flavor: string }) => v.flavor));
+        const remove = (have ?? []).filter((v: { flavor: string }) => !flavors.includes(v.flavor)).map((v: { id: string }) => v.id);
+        if (remove.length) {
+          const del = await db.from("boond_flavor_votes").delete().in("id", remove);
+          if (del.error) throw del.error;
+        }
+        const add = flavors.filter((f) => !haveFlavors.has(f));
+        if (add.length) {
+          const ins = await db.from("boond_flavor_votes").insert(add.map((f) => ({ flavor: f, signup_id: id })));
+          if (ins.error) throw ins.error;
+        }
+        return json({ ok: true, flavors }, 200, cors);
+      }
+
+      case "me_prefs": {
+        const id = await sessionFor(body.session);
+        if (!id) return json({ error: "invalid_session" }, 401, cors);
+        if (typeof body.subscribed !== "boolean") return json({ error: "bad_request" }, 400, cors);
+        const up = await db.from("boond_waitlist_signups")
+          .update({ unsubscribed_at: body.subscribed ? null : new Date().toISOString() }).eq("id", id);
+        if (up.error) throw up.error;
+        return json({ ok: true, subscribed: body.subscribed }, 200, cors);
+      }
+
+      case "me_delete": {
+        const id = await sessionFor(body.session);
+        if (!id) return json({ error: "invalid_session" }, 401, cors);
+        if (body.confirm !== true) return json({ error: "confirm_required" }, 400, cors);
+        // stories and flavor ideas are kept only as long as they are linked to this person
+        for (const table of ["boond_stories", "boond_flavor_suggestions"]) {
+          const d = await db.from(table).delete().eq("signup_id", id);
+          if (d.error) throw d.error;
+        }
+        const del = await db.from("boond_waitlist_signups").delete().eq("id", id); // also removes votes, links and sessions
+        if (del.error) throw del.error;
+        return json({ ok: true }, 200, cors);
+      }
+
+      case "signout": {
+        if (typeof body.session === "string" && TOKEN_RE.test(body.session)) {
+          const d = await db.from("boond_sessions").delete().eq("token_hash", await sha256Hex(body.session));
+          if (d.error) throw d.error;
+        }
         return json({ ok: true }, 200, cors);
       }
 
