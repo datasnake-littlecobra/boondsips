@@ -430,27 +430,57 @@ html[data-style=calm] .founder-photo img{box-shadow:0 6px 18px rgba(30,22,12,.22
 html[data-style=calm] .faq details{box-shadow:0 6px 18px rgba(30,22,12,.22);border-width:2px}
 
 /* ---------- type demo: three styles, same content ---------- */
-html[data-style=type],html[data-style=calm]{--f-head:"Bricolage Grotesque","Figtree",system-ui,sans-serif;--f-body:"Figtree",system-ui,sans-serif}
-html[data-style=type] body,html[data-style=calm] body{font-weight:500}
-html[data-style=type] h1,html[data-style=type] h2,html[data-style=type] h3,
-html[data-style=calm] h1,html[data-style=calm] h2,html[data-style=calm] h3{letter-spacing:-.03em;text-wrap:balance}
-/* no outlines or cartoon shadows on headings (the logo keeps its outline) */
-html[data-style=type] .hero h1,html[data-style=calm] .hero h1,
-html[data-style=type] .reveal .w.hi.on,html[data-style=calm] .reveal .w.hi.on,
-html[data-style=type] .step b,html[data-style=calm] .step b,
-html[data-style=type] .join .h2,html[data-style=calm] .join .h2{-webkit-text-stroke:0;text-shadow:none;paint-order:normal}
-html[data-style=type] .hero h1 .l1,html[data-style=calm] .hero h1 .l1{color:var(--ink)}
-html[data-style=type] .hero h1 .l2,html[data-style=calm] .hero h1 .l2{color:var(--accent-head)}
-html[data-style=type] .join .h2,html[data-style=calm] .join .h2{color:var(--brown)}
-/* calmer: soft shadows, thinner borders, no jumpy button press */
-html[data-style=calm] .btn,html[data-style=calm] .try,html[data-style=calm] .arrow,html[data-style=calm] .menu-close,
-html[data-style=calm] .site-header .btn,html[data-style=calm] .site-header .btn--learn,html[data-style=calm] .btn--vote,
-html[data-style=calm] .card-top .chip,html[data-style=calm] .checks input:checked + span,html[data-style=calm] .calc-top button{box-shadow:0 2px 0 rgba(58,42,22,.35);border-width:2px}
+/* New type: Bricolage Grotesque + Figtree, no heading outlines */
+html[data-style=type]{--f-head:"Bricolage Grotesque","Figtree",system-ui,sans-serif;--f-body:"Figtree",system-ui,sans-serif}
+html[data-style=type] body{font-weight:500}
+html[data-style=type] h1,html[data-style=type] h2,html[data-style=type] h3{letter-spacing:-.03em;text-wrap:balance}
+html[data-style=type] .hero h1,
+html[data-style=type] .reveal .w.hi.on,
+html[data-style=type] .step b,
+html[data-style=type] .join .h2{-webkit-text-stroke:0;text-shadow:none;paint-order:normal}
+html[data-style=type] .hero h1 .l1{color:var(--ink)}
+html[data-style=type] .hero h1 .l2{color:var(--accent-head)}
+html[data-style=type] .join .h2{color:var(--brown)}
+
+/* Calmer: today's fonts and headings, with soft shadows, thinner borders and tighter spacing */
+html[data-style=calm] .btn,html[data-style=calm] .btn--vote,html[data-style=calm] .pill,html[data-style=calm] .chip,
+html[data-style=calm] .card-top .chip,html[data-style=calm] .try,html[data-style=calm] .arrow,html[data-style=calm] .menu-close,
+html[data-style=calm] .site-header .btn,html[data-style=calm] .site-header .btn--learn,
+html[data-style=calm] .checks input:checked + span,html[data-style=calm] .calc-top button{box-shadow:0 2px 0 rgba(58,42,22,.35);border-width:2px}
 html[data-style=calm] .btn:hover,html[data-style=calm] .btn:active{transform:none;box-shadow:0 3px 0 rgba(58,42,22,.35)}
 html[data-style=calm] .try:active,html[data-style=calm] .arrow:active,html[data-style=calm] .vrow:active{transform:none}
 html[data-style=calm] .card,html[data-style=calm] .who-card,html[data-style=calm] .calc,html[data-style=calm] .suggest,
 html[data-style=calm] .joined-note,html[data-style=calm] .vrow,html[data-style=calm] .sheet-card{box-shadow:0 6px 18px rgba(30,22,12,.22);border-width:2px}
 html[data-style=calm] .field{border-width:2px}
+/* Calmer: less empty space between sections */
+html[data-style=calm] .eyebrow{margin-bottom:16px}
+html[data-style=calm] .hero{padding:32px 0 36px}
+html[data-style=calm] .pill{margin-bottom:12px}
+html[data-style=calm] .hero .eyebrow{line-height:1.5}
+html[data-style=calm] .hero h1{margin:2px 0 18px}
+html[data-style=calm] .chips{margin:22px 0 6px}
+html[data-style=calm] .follow{margin-top:16px}
+html[data-style=calm] .founder{padding:44px 0 12px}
+html[data-style=calm] .flavors{padding:4px 0 32px}
+html[data-style=calm] .flavors-head{margin-bottom:18px}
+html[data-style=calm] .vote{padding:44px 0 32px}
+html[data-style=calm] .suggest{margin-top:28px}
+html[data-style=calm] .marquee{padding:12px 0}
+html[data-style=calm] .who{padding:52px 0 40px}
+html[data-style=calm] .why{padding:52px 0}
+html[data-style=calm] .how{padding:52px 0 40px}
+html[data-style=calm] .when{padding:48px 0}
+html[data-style=calm] .when-item{padding:22px 0}
+html[data-style=calm] .math{padding:48px 0}
+html[data-style=calm] .story{padding:52px 0}
+html[data-style=calm] .faq{padding:52px 0 40px}
+html[data-style=calm] .join{padding:52px 0}
+html[data-style=calm] .foot{padding:40px 0 32px}
+@media (min-width:860px){
+  html[data-style=calm] .hero{padding:64px 0 56px}
+  html[data-style=calm] .founder{padding:64px 0 20px}
+  html[data-style=calm] .who,html[data-style=calm] .why,html[data-style=calm] .how,html[data-style=calm] .story,html[data-style=calm] .faq,html[data-style=calm] .join,html[data-style=calm] .vote{padding-top:72px;padding-bottom:56px}
+}
 /* compare panel */
 .cmp-fab{position:fixed;right:14px;bottom:14px;z-index:95;width:52px;height:52px;border-radius:50%;border:3px solid var(--brown);background:var(--orange);color:var(--brown);font:800 1rem/1 var(--f-body);cursor:pointer;box-shadow:3px 3px 0 var(--brown)}
 .cmp-panel{position:fixed;right:14px;bottom:78px;z-index:95;width:min(340px,calc(100vw - 28px));padding:16px;border-radius:22px;background:var(--brown);color:var(--cream);--seg-on:var(--brown);display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
@@ -1200,7 +1230,7 @@ html[data-style=calm] .field{border-width:2px}
   </div></div>
 </div>
 <script>
-/* TYPE DEMO: three styles of the same page. Today = current look. New type = Bricolage Grotesque + Figtree, no heading outlines. Calmer = new type plus softer shadows and borders. */
+/* TYPE DEMO: three styles of the same page. Today = current look. New type = Bricolage Grotesque + Figtree, no heading outlines. Calmer = today's fonts with softer shadows, thinner borders and tighter spacing. */
 (function(){
   "use strict";
   var root = document.documentElement, fab = document.getElementById("cmpFab"), panel = document.getElementById("cmpPanel");
