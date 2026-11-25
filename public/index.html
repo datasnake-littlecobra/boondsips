@@ -358,6 +358,40 @@ textarea.field{min-height:150px;resize:vertical}
   .hero{padding:110px 0 90px}
   .form-row.inline{flex-direction:row;align-items:center}
 }
+
+/* ---------- calmer: soft shadows, thinner borders, tighter spacing ---------- */
+.btn,.btn--vote,.pill,.chip,.card-top .chip,.try,.arrow,.menu-close,.site-header .btn,.site-header .btn--learn,
+.checks input:checked + span,.calc-top button{box-shadow:0 2px 0 rgba(58,42,22,.35);border-width:2px}
+.btn:hover,.btn:active{transform:none;box-shadow:0 3px 0 rgba(58,42,22,.35)}
+.try:active,.arrow:active{transform:none;box-shadow:0 1px 0 rgba(58,42,22,.35)}
+.vrow:active{transform:none}
+.card,.who-card,.calc,.suggest,.joined-note,.vrow,.sheet-card{box-shadow:0 6px 18px rgba(30,22,12,.22);border-width:2px}
+.field{border-width:2px}
+.eyebrow{margin-bottom:16px}
+.hero{padding:32px 0 36px}
+.pill{margin-bottom:12px}
+.hero .eyebrow{line-height:1.5}
+.hero h1{margin:2px 0 18px}
+.chips{margin:22px 0 6px}
+.follow{margin-top:16px}
+.flavors{padding:4px 0 32px}
+.flavors-head{margin-bottom:18px}
+.vote{padding:44px 0 32px}
+.suggest{margin-top:28px}
+.marquee{padding:12px 0}
+.who{padding:52px 0 40px}
+.why{padding:52px 0}
+.how{padding:52px 0 40px}
+.when{padding:48px 0}
+.when-item{padding:22px 0}
+.math{padding:48px 0}
+.story{padding:52px 0}
+.join{padding:52px 0}
+.foot{padding:40px 0 32px}
+@media (min-width:860px){
+  .hero{padding:64px 0 56px}
+  .who,.why,.how,.story,.join,.vote{padding-top:72px;padding-bottom:56px}
+}
 </style>
 </head>
 <body>
@@ -393,6 +427,7 @@ textarea.field{min-height:150px;resize:vertical}
     <a href="#story">Your story</a>
     <a href="#join">Join the waitlist</a>
     <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">Instagram</a>
+    <a href="/signin/">Sign in</a>
   </nav>
   <small>salty sweet, by the drop</small>
 </div>
@@ -639,6 +674,7 @@ textarea.field{min-height:150px;resize:vertical}
       <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">@boondsips</a>
       <a href="#join">Join the waitlist</a>
       <a href="learn/">Learn</a>
+      <a href="/signin/">Sign in</a>
     </div>
     <p>&copy; <span id="yr">2026</span> Boond</p>
   </div>
@@ -905,6 +941,7 @@ textarea.field{min-height:150px;resize:vertical}
           + '<li>A button to vote for a flavor.</li>'
           + '<li>Links to Learn (free lessons) and our Instagram.</li>'
           + '<li>A reply line that goes to a real inbox, and an unsubscribe link in every email.</li></ul></details>'
+          + '<p class="jn-signin"><a href="/signin/">Sign in to see or change your picks</a></p>'
           + '<button type="button" class="later">Use a different email</button>';
         form.parentNode.insertBefore(note, form.nextSibling);
         note.querySelector("button").addEventListener("click", function(){ setJoined(false); });

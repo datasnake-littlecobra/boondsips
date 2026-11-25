@@ -545,7 +545,7 @@ let hubItems = [];
   check(/^0px$/.test(await css(page, ".hero h1", "webkitTextStrokeWidth")) && (await css(page, ".hero h1", "textShadow")) === "none", "type demo: New type removes the headline outline and shadow");
   check(/Fredoka/.test(await fam(page, ".site-header .wordmark")), "type demo: the logo keeps Fredoka");
   check(await page.evaluate(() => [...document.querySelectorAll("[data-style-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.styleChoice).join()) === "type", "type demo: the pressed button follows the style");
-  await page.click("[data-style-choice=calm]");
+  await page.click("[data-style-choice=calm]"); await page.waitForTimeout(500); // buttons animate their shadow for a moment
   const sh = await css(page, ".btn", "boxShadow");
   check(await styleAttr(page) === "calm" && /Fredoka/.test(await fam(page, ".hero h1")) && /Nunito/.test(await fam(page, "body")) && !/5px 5px/.test(sh), "type demo: Calmer keeps today's fonts and softens the button shadow", sh);
   check(/3px/.test(await css(page, ".hero h1", "webkitTextStrokeWidth")), "type demo: Calmer keeps today's headline outline");
@@ -607,6 +607,52 @@ let hubItems = [];
   }
 }
 
+// ---------- Home: Calmer look, Sign in links, and the sign-in pages matching the site ----------
+{
+  const hard = (v) => v.split(/,(?![^(]*\))/).some((layer) => { const parts = layer.replace(/rgba?\([^)]*\)/g, "").trim().split(/\s+/); return Math.abs(parseFloat(parts[0])) >= 2 && parseFloat(parts[2]) === 0; });
+  const home = await newPage(390, 844, "light"); await open(home, "/");
+  await home.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6); await home.evaluate(() => document.fonts.ready);
+  const shadows = await home.evaluate(() => ["#heroForm .btn", ".chip", ".pill", ".site-header .btn", ".site-header .btn--learn", ".btn--vote", ".card", ".try", ".vrow", ".who-card", ".calc", ".suggest"].map((q) => { const e = document.querySelector(q); return [q, e ? getComputedStyle(e).boxShadow : "MISSING"]; }));
+  check(shadows.every(([, v]) => v !== "MISSING" && v !== "none" && !hard(v)), "home calmer: buttons, chips, pill, cards, vote rows and boxes have soft shadows, not hard offsets", JSON.stringify(shadows.filter(([, v]) => v === "MISSING" || v === "none" || hard(v))));
+  check(/3px/.test(await home.evaluate(() => getComputedStyle(document.querySelector(".hero h1")).webkitTextStrokeWidth)) && /Fredoka/.test(await home.evaluate(() => getComputedStyle(document.querySelector(".hero h1")).fontFamily)) && /Nunito/.test(await home.evaluate(() => getComputedStyle(document.body).fontFamily)), "home calmer: fonts and the headline outline stay as they were");
+  const gaps = await home.evaluate(() => {
+    const pad = (sel) => { const c = getComputedStyle(document.querySelector(sel)); return parseFloat(c.paddingTop) + parseFloat(c.paddingBottom); };
+    return { hero: parseFloat(getComputedStyle(document.querySelector(".hero")).paddingTop), who: pad(".who"), why: pad(".why"), how: pad(".how"), vote: pad(".vote"), math: pad(".math"), story: pad(".story"), join: pad(".join") };
+  });
+  check(gaps.hero <= 40 && gaps.who <= 100 && gaps.why <= 110 && gaps.how <= 100 && gaps.vote <= 90 && gaps.math <= 110 && gaps.story <= 110 && gaps.join <= 110, "home calmer: the space above and between sections is tighter", JSON.stringify(gaps));
+  await home.click("#burger"); await home.waitForTimeout(500);
+  check(await home.locator('.menu nav a[href="/signin/"]').isVisible(), "home sign in: the menu has a Sign in link");
+  await home.keyboard.press("Escape"); await home.waitForTimeout(400);
+  check(await home.locator('.foot-links a[href="/signin/"]').count() === 1, "home sign in: the footer has a Sign in link");
+  await home.fill("#heroEmail", "j@k.co"); await home.check("#heroForm input[name=consent]"); await home.click("#heroForm button[type=submit]"); await home.waitForTimeout(500);
+  check(await home.locator('#heroFormJoined a[href="/signin/"]').count() === 1, "home sign in: after joining, the note offers Sign in to see or change picks");
+  for (const [w, h, scheme] of [[360, 640, "light"], [390, 844, "dark"], [430, 932, "light"]]) {
+    const q = await newPage(w, h, scheme); await open(q, "/");
+    check(await noSideScroll(q), `home calmer: no sideways scroll at ${w}px (${scheme})`);
+  }
+
+  // the sign-in pages use the site's own header, menu, footer and button styles
+  const styleOf = (p) => p.evaluate(() => { const g = (q) => { const e = document.querySelector(q); return e ? getComputedStyle(e) : null; }; const hd = g(".site-header"), ft = g(".foot"), bt = g(".site-header .btn"), jn = g(".site-header .btn:not(.btn--learn)"); return { hdBg: hd.backgroundColor, hdH: hd.height, ftBg: ft.backgroundColor, ftInk: ft.color, btnShadow: bt.boxShadow, btnBorder: jn.borderTopWidth, bodyBg: getComputedStyle(document.body).backgroundColor, font: getComputedStyle(document.body).fontFamily }; });
+  for (const scheme of ["light", "dark"]) {
+    const ref = await newPage(390, 844, scheme); await open(ref, "/");
+    const R = await styleOf(ref);
+    for (const url of ["/signin/", "/me/", "/help/email/"]) {
+      const q = await newPage(390, 844, scheme); q.api.respond = () => ({ status: 401, body: { error: "invalid_session" } }); await open(q, url); await q.waitForTimeout(300);
+      const A = await styleOf(q);
+      check(JSON.stringify(A) === JSON.stringify(R), `site look: ${url} has the same header, footer, button and page colors as the home page (${scheme})`, JSON.stringify([A, R]));
+    }
+  }
+  for (const url of ["/signin/", "/me/", "/help/email/"]) {
+    const q = await newPage(390, 844, "light"); q.api.respond = () => ({ status: 401, body: { error: "invalid_session" } }); await open(q, url); await q.waitForTimeout(300);
+    const info = await q.evaluate(() => ({ css: !!document.querySelector('link[rel=stylesheet][href="/shell.css"]'), js: !!document.querySelector('script[src="/shell.js"]'), wm: document.querySelector(".site-header .wordmark").getAttribute("href"), learn: document.querySelector(".site-header .btn--learn").getAttribute("href"), join: document.querySelector('.site-header .btn:not(.btn--learn)').getAttribute("href"), foot: !!document.querySelector('.foot-links a[href="/signin/"]') }));
+    check(info.css && info.js && info.wm === "/" && info.learn === "/learn/" && info.join === "/#join" && info.foot, `site look: ${url} has the site header (logo, Learn, Join), footer and shared files`, JSON.stringify(info));
+    await q.click("#burger"); await q.waitForTimeout(500);
+    check(await q.locator('.menu nav a[href="/signin/"]').isVisible() && await q.locator('.menu nav a[href="/#flavors"]').isVisible(), `site look: the menu works on ${url} and links back to the home page sections`);
+    await q.keyboard.press("Escape"); await q.waitForTimeout(400);
+    check(!(await q.evaluate(() => document.getElementById("menu").classList.contains("open"))), `site look: Escape closes the menu on ${url}`);
+  }
+}
+
 // ---------- Type demo: founder note and FAQ (demo page only; the real home page is untouched) ----------
 {
   const file = fs.readFileSync(path.join(ROOT, "demo-type", "index.html"), "utf8");
@@ -664,8 +710,9 @@ let hubItems = [];
   const files = Object.fromEntries(["signin", "me", "help/email"].map((d) => [d, fs.readFileSync(path.join(ROOT, d, "index.html"), "utf8")]));
   const real = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   check(Object.values(files).every((f) => /name="robots" content="noindex"/.test(f)), "signin/me/help: not indexed by search engines for now");
-  check(!/href="\/(signin|me)\/?"|help\/email/.test(real), "signin/me/help: the real home page does not link to them yet");
-  check(Object.values(files).every((f) => f.indexOf('localStorage.getItem("boondTheme")') < f.indexOf("<style>")), "signin/me/help: the saved theme is applied before the styles load");
+  check(/href="\/signin\/"/.test(real) && !/href="\/me\//.test(real), "signin/me/help: the home page links to Sign in (menu and footer), and My Boond is reached from there");
+  const firstStyle = (f) => Math.min(...["rel=\"stylesheet\"", "<style"].map((k) => f.indexOf(k)).filter((i) => i >= 0));
+  check(Object.values(files).every((f) => f.indexOf('localStorage.getItem("boondTheme")') < firstStyle(f)), "signin/me/help: the saved theme is applied before the styles load");
   const words = /\b(healthy|electrolytes?|gut|digest\w*|immun\w*|energy|detox\w*|gentle|buy|stick|sticks|powder|concentrate|packet|recovery|prebiotic)\b/i;
   check(Object.values(files).every((f) => !words.test(f.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/g, " "))), "signin/me/help: no health claims and no product-format words");
 
