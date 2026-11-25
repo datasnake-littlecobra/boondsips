@@ -103,3 +103,7 @@ How it works: `signin_request` emails a one-time link, `https://boondsips.com/me
 ## Shared shell for pages other than the home page
 
 `public/shell.css` and `public/shell.js` hold the home page's own header, menu, footer, button and form styles (taken from `public/index.html`), so `/signin/`, `/me/` and `/help/email/` look the same as the home page. The "calmer" look (soft shadows, thinner borders, tighter spacing) is one block at the end of the home page's CSS and the same block in `shell.css`; change both together. The home page keeps its CSS inline.
+
+## Sign in button, back-to-top button, and theme switch
+
+The home page hero has a quiet **Sign in** button next to "Vote for a flavor" (it becomes **My Boond** in a browser that is signed in, `boondSession`). A floating **back-to-top** button (`#toTop`) appears after about 700px of scrolling. The **Auto / Light / Dark** switch lives in the menu and the footer on every page: Auto follows the phone or computer setting, Light and Dark are remembered (`boondTheme`), applied before first paint, and the footer follows the theme (yellow in Light, brown in Dark). On the home page this code is inline; on the other pages it is in `shell.js` and `shell.css`. Keep the two in step.

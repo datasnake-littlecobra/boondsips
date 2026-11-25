@@ -49,6 +49,11 @@ try { var __t = localStorage.getItem("boondTheme"); if (__t === "light" || __t =
     <a href="https://www.instagram.com/boondsips/" target="_blank" rel="noopener">Instagram</a>
     <a href="/signin/">Sign in</a>
   </nav>
+  <div class="theme-row"><span>Theme</span><div class="theme-seg" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true"><span>Auto</span></button>
+      <button type="button" data-theme-choice="light" aria-pressed="false"><span>Light</span></button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false"><span>Dark</span></button>
+    </div></div>
   <small>salty sweet, by the drop</small>
 </div>
 
@@ -128,9 +133,16 @@ try { var __t = localStorage.getItem("boondTheme"); if (__t === "light" || __t =
       <a href="/learn/">Learn</a>
       <a href="/signin/">Sign in</a>
     </div>
+    <div class="theme-row"><span>Theme</span><div class="theme-seg" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="auto" aria-pressed="true"><span>Auto</span></button>
+      <button type="button" data-theme-choice="light" aria-pressed="false"><span>Light</span></button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false"><span>Dark</span></button>
+    </div></div>
     <p>&copy; <span id="yr">2026</span> Boond</p>
   </div>
 </footer>
+
+<button class="to-top" id="toTop" type="button" aria-label="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 
 <script src="/shell.js"></script>
 <script>

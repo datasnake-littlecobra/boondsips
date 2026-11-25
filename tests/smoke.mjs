@@ -653,6 +653,92 @@ let hubItems = [];
   }
 }
 
+// ---------- Home: Sign in button, back-to-top button, Auto / Light / Dark switch ----------
+{
+  const bg = (p) => p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const LIGHT = "rgb(255, 242, 214)", DARK = "rgb(30, 22, 12)";
+  const attr = (p) => p.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  const pressed = (p, scope) => p.evaluate((sc) => [...document.querySelectorAll(sc + " [data-theme-choice]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.getAttribute("data-theme-choice")).join(","), scope);
+  const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(Number).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const foot = (p) => p.evaluate(() => { const f = document.querySelector(".foot"); const g = (q) => getComputedStyle(f.querySelector(q)); return { bg: getComputedStyle(f).backgroundColor, ink: getComputedStyle(f).color, muted: g("p").color, link: g(".foot-links a").color, pt: g("[aria-pressed=true] span").color, pf: g("[aria-pressed=true]").backgroundColor }; });
+
+  // ---- hero: Sign in next to Vote
+  let page = await newPage(390, 844, "light"); await open(page, "/");
+  await page.waitForFunction(() => document.querySelectorAll("#vlist .vrow").length === 6);
+  const ha = await page.evaluate(() => { const v = document.querySelector("#voteJump").getBoundingClientRect(), s = document.querySelector("#signInBtn").getBoundingClientRect(); const a = document.querySelector("#signInBtn"); return { inActions: !!document.querySelector(".hero-actions #voteJump") && !!document.querySelector(".hero-actions #signInBtn"), href: a.getAttribute("href"), label: document.getElementById("signInLabel").textContent, signTop: s.top, voteTop: v.top, aboveFold: s.bottom < innerHeight, bg: getComputedStyle(a).backgroundColor, pink: getComputedStyle(document.querySelector(".site-header .btn:not(.btn--learn)")).backgroundColor }; });
+  check(ha.inActions && ha.href === "/signin/" && ha.label === "Sign in", "sign in button: it sits with the Vote button and goes to /signin/", JSON.stringify(ha));
+  check(ha.aboveFold, "sign in button: it is visible on the first screen of a phone, without scrolling", JSON.stringify(ha));
+  check(ha.bg !== ha.pink, "sign in button: it is a quiet (cream) button, so Join stays the main call to action", ha.bg);
+  const wide = await newPage(1100, 800, "light"); await open(wide, "/");
+  check(await wide.evaluate(() => { const v = document.querySelector("#voteJump").getBoundingClientRect(), s = document.querySelector("#signInBtn").getBoundingClientRect(); return Math.abs(v.top - s.top) < 8; }), "sign in button: on a wide screen it sits on the same row as Vote");
+  const signed = await newPage(390, 844, "light"); await signed.addInitScript(() => localStorage.setItem("boondSession", "x")); await open(signed, "/");
+  check(await signed.textContent("#signInLabel") === "My Boond" && await signed.getAttribute("#signInBtn", "href") === "/me/", "sign in button: a signed-in browser sees My Boond, which goes to /me/");
+  await page.click("#voteJump"); await page.waitForTimeout(900);
+  check(await page.evaluate(() => document.getElementById("vote").getBoundingClientRect().top < 300), "sign in button: the Vote button still scrolls to the vote");
+
+  // ---- back to top
+  page = await newPage(390, 844, "light"); await open(page, "/");
+  const topState = async () => page.evaluate(() => { const b = document.getElementById("toTop"); const c = getComputedStyle(b); return { visible: c.visibility === "visible" && parseFloat(c.opacity) > 0.5, cls: b.classList.contains("show"), y: Math.round(scrollY) }; });
+  check(!(await topState()).visible, "back to top: the button is hidden at the top of the page");
+  await page.evaluate(() => window.scrollTo({ top: 1500, behavior: "instant" })); await page.waitForTimeout(500);
+  check((await topState()).visible, "back to top: the button appears once you have scrolled down");
+  const tb = await page.evaluate(() => { const r = document.getElementById("toTop").getBoundingClientRect(); return { r: r.right, b: r.bottom, w: r.width, h: r.height, label: document.getElementById("toTop").getAttribute("aria-label") }; });
+  check(tb.r <= 390 && tb.b <= 844 && tb.w >= 44 && tb.h >= 44 && tb.label === "Back to top", "back to top: it sits inside the phone screen, is a big enough tap target, and has a label", JSON.stringify(tb));
+  await page.click("#toTop"); await page.waitForFunction(() => scrollY < 5, null, { timeout: 8000 }).catch(() => {});
+  check((await topState()).y < 5 && !(await topState()).visible, "back to top: tapping it returns to the top and the button hides again");
+  await page.evaluate(() => window.scrollTo({ top: 600, behavior: "instant" })); await page.waitForTimeout(400);
+  check(!(await topState()).visible, "back to top: a short scroll does not show it");
+
+  // ---- theme switch
+  page = await newPage(390, 844, "light"); await open(page, "/");
+  check(await bg(page) === LIGHT && await pressed(page, ".foot") === "auto" && (await foot(page)).bg === "rgb(255, 210, 63)", "theme: Auto on a light system is the cream page with the yellow footer");
+  await page.emulateMedia({ colorScheme: "dark" });
+  check(await bg(page) === DARK && (await foot(page)).bg === "rgb(58, 42, 22)", "theme: Auto follows the system into dark (brown footer)");
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded(); await page.locator(".foot [data-theme-choice=dark]").click();
+  check(await attr(page) === "dark" && await bg(page) === DARK && (await foot(page)).bg === "rgb(58, 42, 22)", "theme: Dark overrides a light system, footer included");
+  check(await pressed(page, ".foot") === "dark" && await pressed(page, ".menu") === "dark", "theme: the footer and menu controls stay in sync");
+  check(await page.evaluate(() => localStorage.getItem("boondTheme")) === "dark", "theme: the choice is remembered in this browser");
+  await page.reload(); await page.waitForLoadState("load");
+  check(await attr(page) === "dark" && await bg(page) === DARK, "theme: the choice survives a reload");
+  const D = await foot(page);
+  check(ratio(D.ink, D.bg) >= 4.5 && ratio(D.muted, D.bg) >= 4.5 && ratio(D.link, D.bg) >= 4.5 && ratio(D.pt, D.pf) >= 4.5, "theme: the dark footer is readable", JSON.stringify(D));
+  await page.locator(".foot [data-theme-choice=light]").scrollIntoViewIfNeeded(); await page.locator(".foot [data-theme-choice=light]").click();
+  const L = await foot(page);
+  check(await bg(page) === LIGHT && L.bg === "rgb(255, 210, 63)" && ratio(L.ink, L.bg) >= 4.5 && ratio(L.muted, L.bg) >= 4.5 && ratio(L.link, L.bg) >= 4.5 && ratio(L.pt, L.pf) >= 4.5, "theme: Light gives the cream page and a readable yellow footer, even on a dark system");
+  await page.locator(".foot [data-theme-choice=auto]").click();
+  check(await attr(page) === null && await page.evaluate(() => localStorage.getItem("boondTheme")) === null, "theme: Auto removes the saved choice");
+
+  // ---- the menu on a short phone: nothing is cut off
+  const short = await newPage(360, 640, "light"); await open(short, "/");
+  await short.click("#burger"); await short.waitForTimeout(500);
+  await short.locator(".menu [data-theme-choice=dark]").scrollIntoViewIfNeeded(); await short.waitForTimeout(200);
+  const rect = await short.locator(".menu [data-theme-choice=dark]").boundingBox();
+  check(rect && rect.y >= 0 && rect.y + rect.height <= 640 && await short.evaluate(() => getComputedStyle(document.getElementById("menu")).overflowY === "auto"), "menu: on a short phone it scrolls, so the theme control can always be reached", JSON.stringify(rect));
+  await short.locator(".menu [data-theme-choice=dark]").click();
+  check(await attr(short) === "dark", "menu: the theme control works from the menu on a short phone");
+
+  // ---- the same switch and button on the sign-in pages, and the choice follows you between pages
+  for (const url of ["/signin/", "/me/", "/help/email/"]) {
+    const q = await newPage(390, 844, "light"); q.api.respond = () => ({ status: 401, body: { error: "invalid_session" } }); await open(q, url); await q.waitForTimeout(300);
+    check(await q.locator(".menu [data-theme-choice]").count() === 3 && await q.locator(".foot [data-theme-choice]").count() === 3 && await q.locator("#toTop").count() === 1, `site look: ${url} has the theme switch (menu and footer) and the back-to-top button`);
+    await q.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded(); await q.locator(".foot [data-theme-choice=dark]").click();
+    const f = await q.evaluate(() => getComputedStyle(document.querySelector(".foot")).backgroundColor);
+    check(await attr(q) === "dark" && await bg(q) === DARK && f === "rgb(58, 42, 22)", `site look: Dark works on ${url}`);
+  }
+  const hop = await newPage(390, 844, "light"); hop.api.respond = () => ({ status: 401, body: { error: "invalid_session" } });
+  await open(hop, "/signin/"); await hop.locator(".foot [data-theme-choice=dark]").scrollIntoViewIfNeeded(); await hop.locator(".foot [data-theme-choice=dark]").click();
+  await hop.goto(BASE + "/"); await hop.waitForLoadState("load");
+  check(await attr(hop) === "dark" && await bg(hop) === DARK, "site look: a theme chosen on the sign-in page carries over to the home page");
+  for (const [w, h, scheme, choice] of [[360, 640, "light", null], [360, 640, "dark", null], [390, 844, "dark", "light"], [390, 844, "light", "dark"], [1100, 800, "light", null]]) {
+    const q = await newPage(w, h, scheme);
+    if (choice) await q.addInitScript((c) => localStorage.setItem("boondTheme", c), choice);
+    await open(q, "/");
+    check(await noSideScroll(q), `theme: no sideways scroll on the home page at ${w}px (${scheme}${choice ? ", forced " + choice : ""})`);
+  }
+}
+
 // ---------- Type demo: founder note and FAQ (demo page only; the real home page is untouched) ----------
 {
   const file = fs.readFileSync(path.join(ROOT, "demo-type", "index.html"), "utf8");
